@@ -83,8 +83,8 @@ public class Movement : MonoBehaviour {
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
 
         // Move both hands simultaneously
-        leftHand.Translate(pullDirection * Time.deltaTime);
-        rightHand.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
@@ -98,7 +98,7 @@ public class Movement : MonoBehaviour {
         float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
 
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        leftHand.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
@@ -112,7 +112,7 @@ public class Movement : MonoBehaviour {
         float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
 
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        rightHand.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
