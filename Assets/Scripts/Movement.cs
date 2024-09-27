@@ -9,7 +9,6 @@ public class Movement : MonoBehaviour {
     private Ray ray;
     private float rayDistance = 2f;
     public LayerMask ClimbableLayer;
-    public LayerMask FloorLayer;
 
     private float sensitivity = 10f; // Sensitivity of the mouse movement
     private Vector3 lastMousePosition;
