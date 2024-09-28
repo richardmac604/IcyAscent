@@ -15,10 +15,10 @@ public class Movement : MonoBehaviour {
 
 
     public Transform player; // Reference to player
-    public Transform leftHand;
-    public Transform rightHand;
-    private bool leftHandGrabbing = false;
-    private bool rightHandGrabbing = false;
+    public Transform leftPick;
+    public Transform rightPick;
+    private bool leftPickGrabbing = false;
+    private bool rightPickGrabbing = false;
 
     private float pullForce = 20f; // Force for climbing
 
@@ -29,46 +29,46 @@ public class Movement : MonoBehaviour {
     void Update() {
         RaycastHit hit;
         // Check if both mouse buttons are held down
-        bool leftButtonHeld = Input.GetMouseButton(0) && Physics.Raycast(leftHand.position, transform.forward, out hit, rayDistance, ClimbableLayer);
-        bool rightButtonHeld = Input.GetMouseButton(1) && Physics.Raycast(rightHand.position, transform.forward, out hit, rayDistance, ClimbableLayer);
+        bool leftButtonHeld = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out hit, rayDistance, ClimbableLayer);
+        bool rightButtonHeld = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out hit, rayDistance, ClimbableLayer);
 
         // Move both hands if both buttons are pressed
         if (leftButtonHeld && rightButtonHeld) {
-            if (!leftHandGrabbing && !rightHandGrabbing) {
+            if (!leftPickGrabbing && !rightPickGrabbing) {
                 // Store initial mouse position on first click
                 lastMousePosition = Input.mousePosition;
             }
             MoveBothHands();
-            leftHandGrabbing = true;
-            rightHandGrabbing = true;
+            leftPickGrabbing = true;
+            rightPickGrabbing = true;
         }
         // Move left hand if only left button is pressed
         else if (leftButtonHeld) {
-            if (!leftHandGrabbing) {
+            if (!leftPickGrabbing) {
                 // Store initial mouse position on first click
                 lastMousePosition = Input.mousePosition;
             }
             MoveLeftHand();
-            leftHandGrabbing = true;
+            leftPickGrabbing = true;
         }
         // Move right hand if only right button is pressed
         else if (rightButtonHeld) {
-            if (!rightHandGrabbing) {
+            if (!rightPickGrabbing) {
                 // Store initial mouse position on first click
                 lastMousePosition = Input.mousePosition;
             }
             MoveRightHand();
-            rightHandGrabbing = true;
+            rightPickGrabbing = true;
         }
         // Reset grabbing state if no buttons are pressed
         else {
-            leftHandGrabbing = false;
-            rightHandGrabbing = false;
+            leftPickGrabbing = false;
+            rightPickGrabbing = false;
         }
 
 
-        Debug.DrawRay(leftHand.position, transform.forward * rayDistance, Color.red);
-        Debug.DrawRay(rightHand.position, transform.forward * rayDistance, Color.red);
+        Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
+        Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
     }
 
 
@@ -83,8 +83,8 @@ public class Movement : MonoBehaviour {
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
 
         // Move both hands simultaneously
-        transform.Translate(pullDirection * Time.deltaTime);
-        transform.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime, Space.World);
+        transform.Translate(pullDirection * Time.deltaTime, Space.World);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
@@ -98,7 +98,7 @@ public class Movement : MonoBehaviour {
         float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
 
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        transform.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime, Space.World);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
@@ -112,7 +112,7 @@ public class Movement : MonoBehaviour {
         float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
 
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        transform.Translate(pullDirection * Time.deltaTime);
+        transform.Translate(pullDirection * Time.deltaTime, Space.World);
 
         // Update last mouse position
         lastMousePosition = Input.mousePosition;
