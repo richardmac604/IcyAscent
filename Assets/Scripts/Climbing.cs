@@ -29,6 +29,11 @@ public class Movement : MonoBehaviour {
     }
 
     void Update() {
+
+        //RotateArms();
+
+
+
         RaycastHit hit;
         // Check if both mouse buttons are held down
         bool leftButtonHeld = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out hit, rayDistance, ClimbableLayer);
@@ -96,6 +101,15 @@ public class Movement : MonoBehaviour {
         rightPick.position = Vector3.Lerp(rightPick.position, newRightPickPosition, Time.deltaTime * 1);
         rightHandTarget.position = rightPick.position;
 
+
+        // Calculate the average position of the two picks
+        Vector3 averagePickPosition = (leftPick.position + rightPick.position) / 2f;
+
+        // Move the player towards the average pick position to follow the hands
+        Vector3 playerMoveDirection = (averagePickPosition - player.position).normalized;
+        player.position = Vector3.Lerp(player.position, averagePickPosition, Time.deltaTime * 2f);
+
+
         lastMousePosition = Input.mousePosition;
 
     }
@@ -115,7 +129,7 @@ public class Movement : MonoBehaviour {
 
         // Update position of left pick using lerp
         leftPick.position = Vector3.Lerp(leftPick.position, newLeftPickPosition, Time.deltaTime * 1);
-        leftHandTarget.position = leftPick.position;
+        leftHandTarget.position = newLeftPickPosition;
 
         lastMousePosition = Input.mousePosition;
     }
@@ -139,6 +153,27 @@ public class Movement : MonoBehaviour {
 
         lastMousePosition = Input.mousePosition;
     }
+
+
+
+    private void RotateArms() {
+        Vector3 mouseMovement = Input.mousePosition - lastMousePosition;
+
+        float rotationSpeed = 5f; // Adjust the speed of rotation
+
+        // Calculate rotation for left and right arms
+        float rotationX = mouseMovement.y * rotationSpeed; // Vertical mouse movement
+        float rotationY = mouseMovement.x * rotationSpeed; // Horizontal mouse movement
+
+        // Rotate left arm target to follow the movement
+        Quaternion leftArmRotation = Quaternion.Euler(rotationX, rotationY, 0);
+        leftHandTarget.rotation = Quaternion.Slerp(leftHandTarget.rotation, leftArmRotation, Time.deltaTime);
+
+        // Rotate right arm target
+        Quaternion rightArmRotation = Quaternion.Euler(rotationX, -rotationY, 0); // Inverse Y for right arm
+        rightHandTarget.rotation = Quaternion.Slerp(rightHandTarget.rotation, rightArmRotation, Time.deltaTime);
+    }
+
 
 }
 
