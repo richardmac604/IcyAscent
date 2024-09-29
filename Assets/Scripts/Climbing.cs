@@ -15,6 +15,8 @@ public class Movement : MonoBehaviour {
 
 
     public Transform player; // Reference to player
+    public Transform leftHandTarget;
+    public Transform rightHandTarget;
     public Transform leftPick;
     public Transform rightPick;
     private bool leftPickGrabbing = false;
@@ -76,31 +78,45 @@ public class Movement : MonoBehaviour {
 
         // Calculate mouse movement since the last frame
         Vector3 mouseMovement = Input.mousePosition - lastMousePosition;
-        float deltaX = mouseMovement.x * sensitivity * Time.deltaTime;
-        float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
+        float deltaX = mouseMovement.x * sensitivity;
+        float deltaY = mouseMovement.y * sensitivity;
 
-        // Calculate the pull direction for both hands
+        // Calculate the pull direction based on mouse movement (adjust axis as needed)
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
 
-        // Move both hands simultaneously
-        transform.Translate(pullDirection * Time.deltaTime, Space.World);
-        transform.Translate(pullDirection * Time.deltaTime, Space.World);
+        // Move the leftPick position
+        Vector3 newLeftPickPosition = leftPick.position + pullDirection * Time.deltaTime;
+        Vector3 newRightPickPosition = rightPick.position + pullDirection * Time.deltaTime;
 
-        // Update last mouse position
+        // Update position of left pick using lerp
+        leftPick.position = Vector3.Lerp(leftPick.position, newLeftPickPosition, Time.deltaTime * 1);
+        leftHandTarget.position = leftPick.position;
+
+        // Update position of right pick using lerp
+        rightPick.position = Vector3.Lerp(rightPick.position, newRightPickPosition, Time.deltaTime * 1);
+        rightHandTarget.position = rightPick.position;
+
         lastMousePosition = Input.mousePosition;
+
     }
 
     private void MoveLeftHand() {
 
         // Calculate mouse movement since the last frame
         Vector3 mouseMovement = Input.mousePosition - lastMousePosition;
-        float deltaX = mouseMovement.x * sensitivity * Time.deltaTime;
-        float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
+        float deltaX = mouseMovement.x * sensitivity;
+        float deltaY = mouseMovement.y * sensitivity;
 
+        // Calculate the pull direction based on mouse movement (adjust axis as needed)
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        transform.Translate(pullDirection * Time.deltaTime, Space.World);
 
-        // Update last mouse position
+        // Move the leftPick position
+        Vector3 newLeftPickPosition = leftPick.position + pullDirection * Time.deltaTime;
+
+        // Update position of left pick using lerp
+        leftPick.position = Vector3.Lerp(leftPick.position, newLeftPickPosition, Time.deltaTime * 1);
+        leftHandTarget.position = leftPick.position;
+
         lastMousePosition = Input.mousePosition;
     }
 
@@ -108,13 +124,19 @@ public class Movement : MonoBehaviour {
 
         // Calculate mouse movement since the last frame
         Vector3 mouseMovement = Input.mousePosition - lastMousePosition;
-        float deltaX = mouseMovement.x * sensitivity * Time.deltaTime;
-        float deltaY = mouseMovement.y * sensitivity * Time.deltaTime;
+        float deltaX = mouseMovement.x * sensitivity;
+        float deltaY = mouseMovement.y * sensitivity;
 
+        // Calculate the pull direction based on mouse movement (adjust axis as needed)
         Vector3 pullDirection = new Vector3(-deltaX, -deltaY, 0) * pullForce;
-        transform.Translate(pullDirection * Time.deltaTime, Space.World);
 
-        // Update last mouse position
+        // Move the leftPick position
+        Vector3 newRightPickPosition = rightPick.position + pullDirection * Time.deltaTime;
+
+        // Update position of right pick using lerp
+        rightPick.position = Vector3.Lerp(rightPick.position, newRightPickPosition, Time.deltaTime * 1);
+        rightHandTarget.position = rightPick.position;
+
         lastMousePosition = Input.mousePosition;
     }
 
