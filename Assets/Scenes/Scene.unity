@@ -1462,6 +1462,11 @@ MonoBehaviour:
   playerRightHand: {fileID: 888541133}
   playerLeftArm: {fileID: 277371139}
   playerRightArm: {fileID: 2111996929}
+  easyClimbLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  leftPick: {fileID: 888541132}
+  rightPick: {fileID: 888541131}
 --- !u!114 &888541187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2037,7 +2042,7 @@ Transform:
   m_GameObject: {fileID: 1537865683}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0003513246, y: 0.00000005960463, z: 0.0006606428, w: 0.99999976}
-  m_LocalPosition: {x: 95.5, y: 1, z: 147.5}
+  m_LocalPosition: {x: 95.5, y: 0.9362968, z: 147.9107}
   m_LocalScale: {x: 0.10000003, y: 0.100000024, z: 0.10000002}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2164,18 +2169,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4007284284634977664, guid: 7118e5b550d7b81418fd8e71cffa49a9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1681312083}
-    - targetCorrespondingSourceObject: {fileID: 4007284284634977664, guid: 7118e5b550d7b81418fd8e71cffa49a9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1681312084}
   m_SourcePrefab: {fileID: 100100000, guid: 7118e5b550d7b81418fd8e71cffa49a9, type: 3}
 --- !u!1 &1681312079 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4007284284634977664, guid: 7118e5b550d7b81418fd8e71cffa49a9, type: 3}
-  m_PrefabInstance: {fileID: 1681312078}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1681312082 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 765228697694245178, guid: 7118e5b550d7b81418fd8e71cffa49a9, type: 3}
   m_PrefabInstance: {fileID: 1681312078}
   m_PrefabAsset: {fileID: 0}
 --- !u!54 &1681312083
@@ -2205,26 +2202,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 1
---- !u!114 &1681312084
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1681312079}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c8a58a409569064782a05a585301256, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ClimbableLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  player: {fileID: 1681312082}
-  leftHandTarget: {fileID: 0}
-  rightHandTarget: {fileID: 0}
-  leftPick: {fileID: 0}
-  rightPick: {fileID: 0}
 --- !u!1 &1790973802
 GameObject:
   m_ObjectHideFlags: 0

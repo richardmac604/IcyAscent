@@ -11,7 +11,9 @@ public class InputHandler : MonoBehaviour {
     public float horizontalInput;
 
     private void OnEnable() {
-        inputActions = new InputActions();
+        if (inputActions == null) {
+            inputActions = new InputActions();
+        }
         inputActions.Player.MouseMovement.performed += i => movementInput = i.ReadValue<Vector2>();
         inputActions.Enable();
     }
