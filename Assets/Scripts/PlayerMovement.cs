@@ -6,8 +6,8 @@ public class PlayerMovement : MonoBehaviour {
 
     InputHandler inputHandler;
     Rigidbody playerRigidbody;
-    public const float movementSpeed = 5f;
-    public const float lerpSpeed = 1.25f;
+    public const float movementSpeed = 3f;
+    public const float lerpSpeed = 1f;
 
     Vector3 moveDirection;
 
@@ -45,6 +45,17 @@ public class PlayerMovement : MonoBehaviour {
         // Multiply by movespeed
         leftHandMovement *= movementSpeed;
         rightHandMovement *= movementSpeed;
+
+        Vector3 playerPosition = playerRigidbody.position;
+        if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
+            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
+            leftHandMovement.z = 0;
+        }
+
+        if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
+            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
+            rightHandMovement.z = 0;
+        }
 
         // Move current position of Left/Right hand to current position + movement calculated
         // Relocate leftArm and rightArm target
