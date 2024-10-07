@@ -11,11 +11,11 @@ public class PlayerMovement : MonoBehaviour {
     Rigidbody playerRigidbody;
     public const float movementSpeed = 3f;
     public const float lerpSpeed = 1f;
-    Vector3 moveDirection;
     public Transform playerLeftHand;
     public Transform playerRightHand;
     public Transform playerLeftArm;
     public Transform playerRightArm;
+    private Vector3 playerPosition;
 
     // Pickaxe use
     private float rayDistance = 2f;
@@ -23,6 +23,9 @@ public class PlayerMovement : MonoBehaviour {
     public Transform leftPick;
     public Transform rightPick;
     public const float pullUpSpeed = 2f;
+    bool leftPickHit = false;
+    bool rightPickHit = false;
+
 
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
@@ -34,7 +37,6 @@ public class PlayerMovement : MonoBehaviour {
         HandleArmMovement();
         HandlePickaxeUse();
     }
-
 
     private void HandleArmMovement() {
 
@@ -54,21 +56,34 @@ public class PlayerMovement : MonoBehaviour {
         leftHandMovement *= movementSpeed;
         rightHandMovement *= movementSpeed;
 
-        Vector3 playerPosition = playerRigidbody.position;
-        if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
-            leftHandMovement.z = 0;
-        }
+        //playerPosition = playerRigidbody.position;
+        //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
+            //leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
+            //leftHandMovement.z = 0;
+        //}
 
-        if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
-            rightHandMovement.z = 0;
-        }
+        //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
+            //rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
+            //rightHandMovement.z = 0;
+        //}
 
         // Move current position of Left/Right hand to current position + movement calculated
         // Relocate leftArm and rightArm target
-        playerLeftArm.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
-        playerRightArm.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
+        if (!leftPickHit) {
+            playerLeftArm.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
+        }
+        if (!rightPickHit) {
+            playerRightArm.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
+        }
+
+        // If the pickaxe is stuck (hit) on the wall, don't move the arm but ensure the hand stays attached to the hit point.
+        if (leftPickHit) {
+            playerLeftArm.position = playerLeftHand.position;
+        }
+        if (rightPickHit) {
+            playerRightArm.position = playerRightHand.position;
+        }
+
 
     }
 
@@ -80,8 +95,8 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 rightHitPoint;
 
         // Check if both mouse buttons are held down and the pickaxe hits a climbable surface
-        bool leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance, easyClimbLayer);
-        bool rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance, easyClimbLayer);
+        leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance, easyClimbLayer);
+        rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance, easyClimbLayer);
 
         if (leftPickHit && rightPickHit) {
             // Both pickaxes hitting wall
@@ -111,11 +126,44 @@ public class PlayerMovement : MonoBehaviour {
 
     private void MovePlayerTowards(Vector3 targetPosition) {
 
+        // Calculate the direction to the target position (pickaxe hit point)
         Vector3 direction = (targetPosition - transform.position).normalized;
+        direction.z = 0f;
+
+        // Calculate the distance between the player and the target position
+        float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
 
         // Apply movement based on input
-        float horizontalInput = -inputHandler.horizontalInput;
-        float verticalInput = -inputHandler.verticalInput;
+        float verticalInput = -inputHandler.verticalInput; // Climbing input
+        float horizontalInput = -inputHandler.horizontalInput; // Climbing input
+
+        // Determine how much to move vertically based on input
+        Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
+        movement.z = 0f;
+
+        // Calculate the new position by moving the player towards the target position
+        Vector3 newPosition = transform.position + movement;
+
+        // Zero out the Z component to ensure movement only happens in the X and Y axes
+        newPosition.z = transform.position.z;
+
+        // Clamp movement in the Y direction so the player cannot move above the target (pickaxe hit point)
+        if (leftPickHit) {
+            // Ensure the player does not go higher than the left pickaxe hit point
+            if (newPosition.y > targetPosition.y) {
+                newPosition.y = targetPosition.y;
+            }
+        }
+
+        if (rightPickHit) {
+            // Ensure the player does not go higher than the right pickaxe hit point
+            if (newPosition.y > targetPosition.y) {
+                newPosition.y = targetPosition.y;
+            }
+        }
+
+        // Now move the player towards the clamped new position
+        transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
 
     }
 
