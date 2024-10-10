@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
@@ -17,7 +18,10 @@ public class PlayerMovement : MonoBehaviour {
     public Transform playerRightArmTarget;
     private Vector3 lastLeftHandPosition;
     private Vector3 lastRightHandPosition;
-
+    public Transform playerLeftShoulder;
+    public Transform playerRightShoulder;
+    private float leftShoulderToHandLength;
+    private float rightShoulderToHandLength;
 
     private Vector3 playerPosition;
 
@@ -37,6 +41,9 @@ public class PlayerMovement : MonoBehaviour {
 
         lastLeftHandPosition = playerLeftHand.position;
         lastRightHandPosition = playerRightHand.position;
+
+        leftShoulderToHandLength = Vector3.Distance(playerLeftHand.position, playerLeftShoulder.position);
+        rightShoulderToHandLength = Vector3.Distance(playerRightHand.position, playerRightShoulder.position);
     }
 
 
@@ -65,13 +72,13 @@ public class PlayerMovement : MonoBehaviour {
 
         //playerPosition = playerRigidbody.position;
         //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-            //leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
-            //leftHandMovement.z = 0;
+        //leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
+        //leftHandMovement.z = 0;
         //}
 
         //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-            //rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
-            //rightHandMovement.z = 0;
+        //rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
+        //rightHandMovement.z = 0;
         //}
 
         // Move current position of Left/Right hand to current position + movement calculated
@@ -132,16 +139,13 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 direction = (targetPosition - transform.position).normalized;
         direction.z = 0f;
 
-        // Calculate the distance between the player and the target position
-        float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
-
         // Apply movement based on input
         float verticalInput = inputHandler.verticalInput; // Climbing input
         float horizontalInput = inputHandler.horizontalInput; // Climbing input
 
         // Determine how much to move vertically based on input
         Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
-        movement.z = 0f;
+        //movement.z = 0f;
 
         // Calculate the new position by moving the player towards the target position
         Vector3 newPosition = transform.position + movement;
@@ -149,16 +153,28 @@ public class PlayerMovement : MonoBehaviour {
         // Zero out the Z component to ensure movement only happens in the X and Y axis
         newPosition.z = transform.position.z;
 
-        newPosition.y = Mathf.Clamp(newPosition.y, transform.position.y, targetPosition.y + 10f);
+        newPosition.y = Mathf.Clamp(newPosition.y, transform.position.y - 20f, targetPosition.y + 10f);
 
-        transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+
+        Vector3 leftShoulderToHandVector = playerLeftShoulder.position - lastLeftHandPosition;
+        Vector3 rightShoulderToHandVector = playerRightShoulder.position - lastRightHandPosition;
+
 
         if (leftPickHit && rightPickHit) {
+            if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            }
             playerLeftArmTarget.position = lastLeftHandPosition;
             playerRightArmTarget.position = lastRightHandPosition;
         } else if (leftPickHit) {
+            if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
+                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            }
             playerLeftArmTarget.position = lastLeftHandPosition;
-        } else if (rightPickHit) { 
+        } else if (rightPickHit) {
+            if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            }
             playerRightArmTarget.position = lastRightHandPosition;
         }
 
