@@ -25,8 +25,8 @@ public class InputHandler : MonoBehaviour {
         HandleMovementInput();
     }
     private void HandleMovementInput() {
-        verticalInput = movementInput.y;
-        horizontalInput = movementInput.x;
+        verticalInput = -movementInput.y;
+        horizontalInput = -movementInput.x;
     }
 
 }

@@ -13,8 +13,12 @@ public class PlayerMovement : MonoBehaviour {
     public const float lerpSpeed = 1f;
     public Transform playerLeftHand;
     public Transform playerRightHand;
-    public Transform playerLeftArm;
-    public Transform playerRightArm;
+    public Transform playerLeftArmTarget;
+    public Transform playerRightArmTarget;
+    private Vector3 lastLeftHandPosition;
+    private Vector3 lastRightHandPosition;
+
+
     private Vector3 playerPosition;
 
     // Pickaxe use
@@ -30,6 +34,9 @@ public class PlayerMovement : MonoBehaviour {
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
         playerRigidbody = GetComponent<Rigidbody>();
+
+        lastLeftHandPosition = playerLeftHand.position;
+        lastRightHandPosition = playerRightHand.position;
     }
 
 
@@ -70,20 +77,11 @@ public class PlayerMovement : MonoBehaviour {
         // Move current position of Left/Right hand to current position + movement calculated
         // Relocate leftArm and rightArm target
         if (!leftPickHit) {
-            playerLeftArm.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
+            playerLeftArmTarget.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
         }
         if (!rightPickHit) {
-            playerRightArm.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
+            playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
-
-        // If the pickaxe is stuck (hit) on the wall, don't move the arm but ensure the hand stays attached to the hit point.
-        if (leftPickHit) {
-            playerLeftArm.position = playerLeftHand.position;
-        }
-        if (rightPickHit) {
-            playerRightArm.position = playerRightHand.position;
-        }
-
 
     }
 
@@ -103,6 +101,8 @@ public class PlayerMovement : MonoBehaviour {
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput
             leftHitPoint = leftPickaxeHitPoint.point;
             rightHitPoint = rightPickaxeHitPoint.point;
+            lastLeftHandPosition = playerLeftHand.position;
+            lastRightHandPosition = playerRightHand.position;
             Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
             MovePlayerTowards(targetPosition);
 
@@ -110,6 +110,7 @@ public class PlayerMovement : MonoBehaviour {
             // Left pickaxe hitting wall
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the leftPickaxeHit location
             leftHitPoint = leftPickaxeHitPoint.point;
+            lastLeftHandPosition = playerLeftHand.position;
             MovePlayerTowards(leftHitPoint);
 
 
@@ -117,6 +118,7 @@ public class PlayerMovement : MonoBehaviour {
             // Right pickaxe hitting wall
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the rightPickaxeHit location
             rightHitPoint = rightPickaxeHitPoint.point;
+            lastRightHandPosition = playerRightHand.position;
             MovePlayerTowards(rightHitPoint);
         }
 
@@ -134,8 +136,8 @@ public class PlayerMovement : MonoBehaviour {
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
 
         // Apply movement based on input
-        float verticalInput = -inputHandler.verticalInput; // Climbing input
-        float horizontalInput = -inputHandler.horizontalInput; // Climbing input
+        float verticalInput = inputHandler.verticalInput; // Climbing input
+        float horizontalInput = inputHandler.horizontalInput; // Climbing input
 
         // Determine how much to move vertically based on input
         Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
@@ -144,26 +146,21 @@ public class PlayerMovement : MonoBehaviour {
         // Calculate the new position by moving the player towards the target position
         Vector3 newPosition = transform.position + movement;
 
-        // Zero out the Z component to ensure movement only happens in the X and Y axes
+        // Zero out the Z component to ensure movement only happens in the X and Y axis
         newPosition.z = transform.position.z;
 
-        // Clamp movement in the Y direction so the player cannot move above the target (pickaxe hit point)
-        if (leftPickHit) {
-            // Ensure the player does not go higher than the left pickaxe hit point
-            if (newPosition.y > targetPosition.y) {
-                newPosition.y = targetPosition.y;
-            }
-        }
+        newPosition.y = Mathf.Clamp(newPosition.y, transform.position.y, targetPosition.y + 10f);
 
-        if (rightPickHit) {
-            // Ensure the player does not go higher than the right pickaxe hit point
-            if (newPosition.y > targetPosition.y) {
-                newPosition.y = targetPosition.y;
-            }
-        }
-
-        // Now move the player towards the clamped new position
         transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+
+        if (leftPickHit && rightPickHit) {
+            playerLeftArmTarget.position = lastLeftHandPosition;
+            playerRightArmTarget.position = lastRightHandPosition;
+        } else if (leftPickHit) {
+            playerLeftArmTarget.position = lastLeftHandPosition;
+        } else if (rightPickHit) { 
+            playerRightArmTarget.position = lastRightHandPosition;
+        }
 
     }
 
