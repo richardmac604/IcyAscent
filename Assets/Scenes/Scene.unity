@@ -1462,6 +1462,8 @@ MonoBehaviour:
   playerRightHand: {fileID: 888541133}
   playerLeftArmTarget: {fileID: 277371139}
   playerRightArmTarget: {fileID: 2111996929}
+  playerLeftShoulder: {fileID: 888541159}
+  playerRightShoulder: {fileID: 888541135}
   easyClimbLayer:
     serializedVersion: 2
     m_Bits: 64

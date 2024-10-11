@@ -35,6 +35,10 @@ public class PlayerMovement : MonoBehaviour {
     bool rightPickHit = false;
 
 
+    // Physics
+    private const float GRAVITY = -9.8f;
+    private float velocityResetSpeed = 5f;
+
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
         playerRigidbody = GetComponent<Rigidbody>();
@@ -57,6 +61,7 @@ public class PlayerMovement : MonoBehaviour {
     public void HandleAllMovement() {
         HandleArmMovement();
         HandlePickaxeUse();
+        ApplyPhysics();
     }
 
     private void HandleArmMovement() {
@@ -77,18 +82,17 @@ public class PlayerMovement : MonoBehaviour {
         leftHandMovement *= movementSpeed;
         rightHandMovement *= movementSpeed;
 
-        //playerPosition = playerRigidbody.position;
-        //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-        //leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
-        //leftHandMovement.z = 0;
-        //}
+        playerPosition = playerRigidbody.position;
+        if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
+            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
+            leftHandMovement.z = 0;
+        }
 
-        //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-        //rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
-        //rightHandMovement.z = 0;
-        //}
+        if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
+            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
+            rightHandMovement.z = 0;
+        }
 
-        // Move current position of Left/Right hand to current position + movement calculated
         // Relocate leftArm and rightArm target
         if (!leftPickHit) {
             playerLeftArmTarget.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
@@ -97,6 +101,27 @@ public class PlayerMovement : MonoBehaviour {
             playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
 
+    }
+
+    private void ApplyPhysics() {
+        if (leftPickHit || rightPickHit) {
+            // Gradually reduce the vertical velocity towards zero
+            if (playerRigidbody.velocity.y > 0) {
+                // If moving up, decrease the upward velocity
+                playerRigidbody.velocity += Vector3.down * velocityResetSpeed * Time.deltaTime;
+            } else if (playerRigidbody.velocity.y < 0) {
+                // If moving down, increase the downward velocity towards zero
+                playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
+            }
+
+            // Ensure the vertical velocity does not go below 0.1
+            if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
+                playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
+            }
+        } else {
+            // Apply gravity when no pick in wall
+            playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
+        }
     }
 
 
