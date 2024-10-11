@@ -46,6 +46,13 @@ public class PlayerMovement : MonoBehaviour {
         rightShoulderToHandLength = Vector3.Distance(playerRightHand.position, playerRightShoulder.position);
     }
 
+    private void Start() {
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Confined;
+    }
+
 
     public void HandleAllMovement() {
         HandleArmMovement();
@@ -139,7 +146,6 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 direction = (targetPosition - transform.position).normalized;
         direction.z = 0f;
 
-        // Apply movement based on input
         float verticalInput = inputHandler.verticalInput; // Climbing input
         float horizontalInput = inputHandler.horizontalInput; // Climbing input
 
@@ -155,26 +161,63 @@ public class PlayerMovement : MonoBehaviour {
 
         newPosition.y = Mathf.Clamp(newPosition.y, transform.position.y - 20f, targetPosition.y + 10f);
 
-
         Vector3 leftShoulderToHandVector = playerLeftShoulder.position - lastLeftHandPosition;
         Vector3 rightShoulderToHandVector = playerRightShoulder.position - lastRightHandPosition;
 
 
         if (leftPickHit && rightPickHit) {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                // If the leftShoulder position and rightShoulder position are within the length of arms move
                 transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            } else {
+                // Calculate future left shoulder position
+                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
+                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
+
+                // Calculate future right shoulder position
+                Vector3 simulatedRightShoulderPos = newPosition + (playerRightShoulder.position - transform.position);
+                rightShoulderToHandVector = simulatedRightShoulderPos - lastRightHandPosition;
+
+                // If the future leftShoulder and rightShoulder position are within the length of arms move
+                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                }
             }
+            // Reset location of both hands
             playerLeftArmTarget.position = lastLeftHandPosition;
             playerRightArmTarget.position = lastRightHandPosition;
         } else if (leftPickHit) {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
+                // If the leftShoulder position and rightShoulder position are within the length of arms move
                 transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            } else {
+                // Calculate future left shoulder position
+                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
+                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
+
+                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
+                    // If the future leftShoulder position are within the length of the arms move
+                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                }
             }
+            // Reset left hand location
             playerLeftArmTarget.position = lastLeftHandPosition;
         } else if (rightPickHit) {
             if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                // If the rightShoulder position are within the length of arms move
                 transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+            } else {
+                
+                // Calculate future right shoulder position
+                Vector3 simulatedRightShoulderPos = newPosition + (playerRightShoulder.position - transform.position);
+                rightShoulderToHandVector = simulatedRightShoulderPos - lastRightHandPosition;
+                
+                if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
+                    // If the future rightShoulder position is within the length of arms move
+                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                }
             }
+            // Reset right hand location
             playerRightArmTarget.position = lastRightHandPosition;
         }
 
