@@ -25,6 +25,16 @@ public class PlayerMovement : MonoBehaviour {
 
     private Vector3 playerPosition;
 
+    // Joints
+    public float swaySpeed = 5f;
+    private Rigidbody leftHandRB;
+    private Rigidbody rightHandRB;
+
+    private ConfigurableJoint leftJoint;
+    private ConfigurableJoint rightJoint;
+
+
+
     // Pickaxe use
     private float rayDistance = 2f;
     public LayerMask easyClimbLayer;
@@ -42,7 +52,8 @@ public class PlayerMovement : MonoBehaviour {
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
         playerRigidbody = GetComponent<Rigidbody>();
-
+        leftHandRB = playerLeftHand.GetComponent<Rigidbody>();
+        rightHandRB = playerRightHand.GetComponent<Rigidbody>();
         lastLeftHandPosition = playerLeftHand.position;
         lastRightHandPosition = playerRightHand.position;
 
@@ -61,7 +72,7 @@ public class PlayerMovement : MonoBehaviour {
     public void HandleAllMovement() {
         HandleArmMovement();
         HandlePickaxeUse();
-        ApplyPhysics();
+        //ApplyPhysics();
     }
 
     private void HandleArmMovement() {
@@ -100,6 +111,18 @@ public class PlayerMovement : MonoBehaviour {
         if (!rightPickHit) {
             playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
+
+    }
+
+    private void Update() {
+        //if (Input.GetMouseButtonUp(0)) {
+            //DetachFromWall();
+        //} else 
+        //if (leftJoint != null) {
+            //ApplySwing();
+        //}
+
+
 
     }
 
@@ -150,6 +173,15 @@ public class PlayerMovement : MonoBehaviour {
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the leftPickaxeHit location
             leftHitPoint = leftPickaxeHitPoint.point;
             lastLeftHandPosition = playerLeftHand.position;
+
+            AttachToWall(leftHitPoint);
+
+            //leftHandJoint.connectedBody = leftPickaxeHitPoint.rigidbody;
+            //Vector3 sway = new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0);
+            //leftHandJoint.targetPosition += sway * Time.deltaTime;
+
+            //leftHandRB.constraints = RigidbodyConstraints.FreezeAll;
+            //playerRigidbody.constraints = RigidbodyConstraints.FreezeAll;
             MovePlayerTowards(leftHitPoint);
 
 
@@ -164,6 +196,47 @@ public class PlayerMovement : MonoBehaviour {
         Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
         Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
     }
+
+
+
+
+    void AttachToWall(Vector3 hitPoint) {
+        // Create the joint and configure it
+        if (leftJoint == null) {
+            leftJoint = gameObject.AddComponent<ConfigurableJoint>();
+            leftJoint.connectedAnchor = hitPoint;
+
+
+            // Configure movement
+            leftJoint.xMotion = ConfigurableJointMotion.Free;
+            leftJoint.yMotion = ConfigurableJointMotion.Locked;
+            leftJoint.zMotion = ConfigurableJointMotion.Locked;
+
+            // Angular motion should be free to allow swinging
+            leftJoint.angularXMotion = ConfigurableJointMotion.Locked;
+            leftJoint.angularYMotion = ConfigurableJointMotion.Locked;
+            leftJoint.angularZMotion = ConfigurableJointMotion.Locked;
+
+            // Configure swing limits if needed (e.g., limit the swing angle)
+            JointDrive drive = new JointDrive();
+            drive.positionSpring = 10f;  // Adjust spring force to control the stiffness of the swing
+            drive.positionDamper = 0.5f; // Adjust damping to control swing resistance
+            leftJoint.slerpDrive = drive;
+        }
+    }
+    void ApplySwing() {
+        // Apply torque to the player's body based on mouse movement for the swinging effect
+        Vector3 torque = new Vector3(0, inputHandler.horizontalInput * swaySpeed, 0);
+        //playerRigidbody.AddTorque(torque, ForceMode.Acceleration);
+        playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed,0, 0), ForceMode.Impulse);
+    }
+
+    void DetachFromWall() {
+        if (leftJoint != null) {
+            Destroy(leftJoint);
+        }
+    }
+
 
     private void MovePlayerTowards(Vector3 targetPosition) {
 
@@ -215,6 +288,7 @@ public class PlayerMovement : MonoBehaviour {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
                 // If the leftShoulder position and rightShoulder position are within the length of arms move
                 transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                ApplySwing();
             } else {
                 // Calculate future left shoulder position
                 Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
@@ -232,11 +306,11 @@ public class PlayerMovement : MonoBehaviour {
                 // If the rightShoulder position are within the length of arms move
                 transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
             } else {
-                
+
                 // Calculate future right shoulder position
                 Vector3 simulatedRightShoulderPos = newPosition + (playerRightShoulder.position - transform.position);
                 rightShoulderToHandVector = simulatedRightShoulderPos - lastRightHandPosition;
-                
+
                 if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
                     // If the future rightShoulder position is within the length of arms move
                     transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
