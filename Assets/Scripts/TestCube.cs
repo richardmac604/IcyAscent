@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TestCube : MonoBehaviour {
@@ -16,7 +17,8 @@ public class TestCube : MonoBehaviour {
             Debug.Log(horizontalInput);
 
             HingeObject.GetComponent<Rigidbody>().AddForce(horizontalInput, 0f,0f);
-
+        } else if (Input.GetMouseButtonUp(0)) {
+            Destroy(HingeObject.GetComponent<HingeJoint>());
         }
     }
 
