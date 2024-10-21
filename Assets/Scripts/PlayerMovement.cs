@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class PlayerMovement : MonoBehaviour {
 
@@ -30,8 +31,9 @@ public class PlayerMovement : MonoBehaviour {
     private Rigidbody leftHandRB;
     private Rigidbody rightHandRB;
 
-    private ConfigurableJoint leftJoint;
-    private ConfigurableJoint rightJoint;
+    public HingeJoint leftJoint;
+    //public HingeJoint leftHinge;
+    public ConfigurableJoint rightJoint;
 
 
 
@@ -114,18 +116,6 @@ public class PlayerMovement : MonoBehaviour {
 
     }
 
-    private void Update() {
-        //if (Input.GetMouseButtonUp(0)) {
-            //DetachFromWall();
-        //} else 
-        //if (leftJoint != null) {
-            //ApplySwing();
-        //}
-
-
-
-    }
-
     private void ApplyPhysics() {
         if (leftPickHit || rightPickHit) {
             // Gradually reduce the vertical velocity towards zero
@@ -151,94 +141,125 @@ public class PlayerMovement : MonoBehaviour {
     private void HandlePickaxeUse() {
         RaycastHit leftPickaxeHitPoint = new RaycastHit();
         RaycastHit rightPickaxeHitPoint = new RaycastHit();
-        Vector3 leftHitPoint;
-        Vector3 rightHitPoint;
 
         // Check if both mouse buttons are held down and the pickaxe hits a climbable surface
         leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance, easyClimbLayer);
         rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance, easyClimbLayer);
 
+
+
         if (leftPickHit && rightPickHit) {
             // Both pickaxes hitting wall
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput
-            leftHitPoint = leftPickaxeHitPoint.point;
-            rightHitPoint = rightPickaxeHitPoint.point;
+            //leftHitPoint = leftPickaxeHitPoint.point;
+            //rightHitPoint = rightPickaxeHitPoint.point;
+            //Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
             lastLeftHandPosition = playerLeftHand.position;
             lastRightHandPosition = playerRightHand.position;
-            Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
-            MovePlayerTowards(targetPosition);
+            MovePlayerTowards(leftPickaxeHitPoint, rightPickaxeHitPoint);
+
 
         } else if (leftPickHit) {
             // Left pickaxe hitting wall
+
+
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the leftPickaxeHit location
-            leftHitPoint = leftPickaxeHitPoint.point;
+            //leftHitPoint = leftPickaxeHitPoint.point;
             lastLeftHandPosition = playerLeftHand.position;
 
-            AttachToWall(leftHitPoint);
-
-            //leftHandJoint.connectedBody = leftPickaxeHitPoint.rigidbody;
-            //Vector3 sway = new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0);
-            //leftHandJoint.targetPosition += sway * Time.deltaTime;
-
-            //leftHandRB.constraints = RigidbodyConstraints.FreezeAll;
-            //playerRigidbody.constraints = RigidbodyConstraints.FreezeAll;
-            MovePlayerTowards(leftHitPoint);
+            MovePlayerTowards(leftPickaxeHitPoint, rightPickaxeHitPoint);
 
 
         } else if (rightPickHit) {
             // Right pickaxe hitting wall
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the rightPickaxeHit location
-            rightHitPoint = rightPickaxeHitPoint.point;
+            //rightHitPoint = rightPickaxeHitPoint.point;
+
             lastRightHandPosition = playerRightHand.position;
-            MovePlayerTowards(rightHitPoint);
+            MovePlayerTowards(leftPickaxeHitPoint, rightPickaxeHitPoint);
         }
+
+
+        //if (Input.GetMouseButtonUp(0) && leftJoint != null) Destroy(leftJoint);
+        if (Input.GetMouseButtonUp(1) && rightJoint != null) Destroy(rightJoint);
 
         Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
         Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
     }
 
+    private void ApplySwingForce(float horizontalInput, Vector3 anchorPoint) {
+        // Calculate the direction relative to the hand's anchored point
+        Vector3 directionToAnchor = (anchorPoint - playerRigidbody.position).normalized;
 
+        // Calculate a perpendicular direction for the swing force
+        Vector3 swingDirection = Vector3.Cross(directionToAnchor, Vector3.forward);
 
-
-    void AttachToWall(Vector3 hitPoint) {
-        // Create the joint and configure it
-        if (leftJoint == null) {
-            leftJoint = gameObject.AddComponent<ConfigurableJoint>();
-            leftJoint.connectedAnchor = hitPoint;
-
-
-            // Configure movement
-            leftJoint.xMotion = ConfigurableJointMotion.Free;
-            leftJoint.yMotion = ConfigurableJointMotion.Locked;
-            leftJoint.zMotion = ConfigurableJointMotion.Locked;
-
-            // Angular motion should be free to allow swinging
-            leftJoint.angularXMotion = ConfigurableJointMotion.Locked;
-            leftJoint.angularYMotion = ConfigurableJointMotion.Locked;
-            leftJoint.angularZMotion = ConfigurableJointMotion.Locked;
-
-            // Configure swing limits if needed (e.g., limit the swing angle)
-            JointDrive drive = new JointDrive();
-            drive.positionSpring = 10f;  // Adjust spring force to control the stiffness of the swing
-            drive.positionDamper = 0.5f; // Adjust damping to control swing resistance
-            leftJoint.slerpDrive = drive;
-        }
-    }
-    void ApplySwing() {
-        // Apply torque to the player's body based on mouse movement for the swinging effect
-        Vector3 torque = new Vector3(0, inputHandler.horizontalInput * swaySpeed, 0);
-        //playerRigidbody.AddTorque(torque, ForceMode.Acceleration);
-        playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed,0, 0), ForceMode.Impulse);
+        // Apply force along the swing direction based on player input
+        playerRigidbody.AddForce(swingDirection * horizontalInput * swaySpeed, ForceMode.Force);
     }
 
-    void DetachFromWall() {
-        if (leftJoint != null) {
-            Destroy(leftJoint);
-        }
-    }
+    //private void MovePlayerTowards(RaycastHit leftRay, RaycastHit rightRay) {
+    //    Vector3 leftHitPoint;
+    //    Vector3 rightHitPoint;
+
+    //    // Calculate the direction to the target position (pickaxe hit point)
+    //    //Vector3 direction = (targetPosition - transform.position).normalized;
+    //    //direction.z = 0f;
+
+    //    float verticalInput = inputHandler.verticalInput; // Climbing input
+    //    float horizontalInput = inputHandler.horizontalInput; // Climbing input
+
+    //    // Determine how much to move vertically based on input
+    //    Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
 
 
-    private void MovePlayerTowards(Vector3 targetPosition) {
+
+
+    //    if (leftPickHit && rightPickHit) {
+    //        Vector3 targetPosition = (leftRay.point + rightRay.point) / 2;
+
+
+    //        playerLeftArmTarget.position = lastLeftHandPosition;
+    //        playerRightArmTarget.position = lastRightHandPosition;
+    //    } else if (leftPickHit) {
+    //        leftHitPoint = leftRay.point;
+    //        Debug.Log(leftJoint);
+
+    //        if (leftJoint == null) {
+    //            // Create a joint for the left hand and anchor it to the hit point on the wall
+    //            leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
+    //            leftJoint.axis = Vector3.forward;
+    //            leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // No connected body, fixed to the wall
+    //            leftJoint.autoConfigureConnectedAnchor = true;
+    //            //leftJoint.anchor = leftHitPoint;  // Anchor at the hand's current position
+    //            //leftJoint.connectedAnchor = leftHitPoint;  // Hand is anchored to the hit point on the wall
+    //        }
+
+    //        playerLeftArmTarget.position = lastLeftHandPosition;
+
+    //        Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) *swaySpeed;
+    //        playerRigidbody.AddForce(swingDirection, ForceMode.Impulse);
+
+
+    //        // Apply swing force to the player rigidbody
+    //        //ApplySwingForce(horizontalInput, leftRay.point);
+
+
+    //    } else if (rightPickHit) {
+    //        rightHitPoint = rightRay.point;
+
+    //        playerRightArmTarget.position = lastRightHandPosition;
+    //    }
+
+    //}
+
+
+
+
+
+    private void MovePlayerTowards(RaycastHit leftRay, RaycastHit rightRay) {
+
+        Vector3 targetPosition = leftRay.point;
 
         // Calculate the direction to the target position (pickaxe hit point)
         Vector3 direction = (targetPosition - transform.position).normalized;
@@ -287,20 +308,50 @@ public class PlayerMovement : MonoBehaviour {
         } else if (leftPickHit) {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
                 // If the leftShoulder position and rightShoulder position are within the length of arms move
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-                ApplySwing();
-            } else {
-                // Calculate future left shoulder position
-                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
-                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
 
-                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
-                    // If the future leftShoulder position are within the length of the arms move
-                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                if (leftJoint == null) {
+                    // Create a joint for the left hand and anchor it to the hit point on the wall
+                    leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
+                    leftJoint.axis = Vector3.forward;
+                    leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // No connected body, fixed to the wall
+                    leftJoint.autoConfigureConnectedAnchor = true;
+                    //leftJoint.anchor = leftHitPoint;  // Anchor at the hand's current position
+                    //leftJoint.connectedAnchor = leftHitPoint;  // Hand is anchored to the hit point on the wall
                 }
-            }
-            // Reset left hand location
-            playerLeftArmTarget.position = lastLeftHandPosition;
+
+                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) *swaySpeed;
+            //playerLeftArmTarget.GetComponent<Rigidbody>().AddForce(swingDirection, ForceMode.Acceleration);
+            //playerRigidbody.AddForce(swingDirection, ForceMode.Acceleration);
+            //ApplySwing();
+        }
+        //else {
+
+
+        //    // Calculate future left shoulder position
+        //    Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
+        //    leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
+
+        //    if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
+
+        //        if (leftJoint == null) {
+        //            // Create a joint for the left hand and anchor it to the hit point on the wall
+        //            leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
+        //            leftJoint.axis = Vector3.forward;
+        //            leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // No connected body, fixed to the wall
+        //            leftJoint.autoConfigureConnectedAnchor = true;
+        //            //leftJoint.anchor = leftHitPoint;  // Anchor at the hand's current position
+        //            //leftJoint.connectedAnchor = leftHitPoint;  // Hand is anchored to the hit point on the wall
+        //        }
+        //        // If the future leftShoulder position are within the length of the arms move
+        //        transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+        //        Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) * swaySpeed;
+        //        //playerLeftArmTarget.GetComponent<Rigidbody>().AddForce(swingDirection, ForceMode.Acceleration);
+        //        playerRigidbody.AddForce(swingDirection, ForceMode.Acceleration);
+        //    }
+        //}
+        // Reset left hand location
+        playerLeftArmTarget.position = lastLeftHandPosition;
         } else if (rightPickHit) {
             if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
                 // If the rightShoulder position are within the length of arms move
