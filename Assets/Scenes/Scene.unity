@@ -781,7 +781,7 @@ Transform:
   m_GameObject: {fileID: 729656799}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 89.957, y: 2.4, z: 148.131}
+  m_LocalPosition: {x: 89.957, y: 2.4, z: 148.934}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2094,7 +2094,6 @@ GameObject:
   - component: {fileID: 1340070037}
   - component: {fileID: 1340070036}
   - component: {fileID: 1340070041}
-  - component: {fileID: 1340070040}
   - component: {fileID: 1340070042}
   m_Layer: 6
   m_Name: HingeJoint
@@ -2183,51 +2182,12 @@ Transform:
   m_GameObject: {fileID: 1340070033}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 89.957, y: 1.492, z: 148.131}
+  m_LocalPosition: {x: 95.31, y: 4.015, z: 148.96}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!59 &1340070040
-HingeJoint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1340070033}
-  m_ConnectedBody: {fileID: 729656800}
-  m_ConnectedArticulationBody: {fileID: 0}
-  m_Anchor: {x: 0, y: 0.5, z: 0}
-  m_Axis: {x: 0, y: 0, z: 1}
-  m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.21400452, y: -1.3160002, z: 0}
-  serializedVersion: 2
-  m_UseSpring: 0
-  m_Spring:
-    spring: 0
-    damper: 0
-    targetPosition: 0
-  m_UseMotor: 0
-  m_Motor:
-    targetVelocity: 0
-    force: 0
-    freeSpin: 0
-  m_UseLimits: 0
-  m_ExtendedLimits: 0
-  m_UseAcceleration: 0
-  m_Limits:
-    min: 0
-    max: 0
-    bounciness: 0
-    bounceMinVelocity: 0.2
-    contactDistance: 0
-  m_BreakForce: Infinity
-  m_BreakTorque: Infinity
-  m_EnableCollision: 0
-  m_EnablePreprocessing: 1
-  m_MassScale: 1
-  m_ConnectedMassScale: 1
 --- !u!54 &1340070041
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2250,7 +2210,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 8
@@ -2267,6 +2227,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0198475a87ad21a4a9e8e70e6c1b9e2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  easyClimbLayer:
+    serializedVersion: 2
+    m_Bits: 64
   HingeObject: {fileID: 1340070033}
 --- !u!1 &1365242349
 GameObject:
