@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour {
     private Vector3 playerPosition;
 
     // Pickaxe use
-    private float rayDistance = 2f;
+    private float rayDistance = 50f;
     public LayerMask easyClimbLayer;
     public Transform leftPick;
     public Transform rightPick;
