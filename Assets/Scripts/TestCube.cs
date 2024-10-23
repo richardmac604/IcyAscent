@@ -15,9 +15,7 @@ public class TestCube : MonoBehaviour {
          RaycastHit hitPoint = new RaycastHit();
          rayHit = Input.GetMouseButton(0) && Physics.Raycast(gameObject.transform.position, transform.forward, out hitPoint, rayDistance, easyClimbLayer);
         if (rayHit) {
-            Debug.Log("RayHit");
             if (joint == null) {
-            Debug.Log("CreatingJoint");
                 // Create a joint for the left hand and anchor it to the hit point on the wall
                 joint = gameObject.AddComponent<HingeJoint>();
                 joint.axis = Vector3.forward;
@@ -27,7 +25,6 @@ public class TestCube : MonoBehaviour {
                 joint.connectedAnchor = hitPoint.point;  // Hand is anchored to the hit point on the wall
             }
 
-            Debug.Log("Holding mouse down");
             float horizontalInput = Input.GetAxis("Mouse X") * speed;
             horizontalInput *= Time.deltaTime;
 

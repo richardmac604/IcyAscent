@@ -32,6 +32,7 @@ public class PlayerMovement : MonoBehaviour {
     private Rigidbody rightHandRB;
 
     public HingeJoint leftJoint;
+    //public ConfigurableJoint leftJoint;
     //public HingeJoint leftHinge;
     public ConfigurableJoint rightJoint;
 
@@ -109,9 +110,11 @@ public class PlayerMovement : MonoBehaviour {
         // Relocate leftArm and rightArm target
         if (!leftPickHit) {
             playerLeftArmTarget.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
+            //playerLeftHand.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
         }
         if (!rightPickHit) {
             playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
+            //playerRightHand.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
 
     }
@@ -180,7 +183,7 @@ public class PlayerMovement : MonoBehaviour {
         }
 
 
-        //if (Input.GetMouseButtonUp(0) && leftJoint != null) Destroy(leftJoint);
+        if (Input.GetMouseButtonUp(0) && leftJoint != null) Destroy(leftJoint);
         if (Input.GetMouseButtonUp(1) && rightJoint != null) Destroy(rightJoint);
 
         Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
@@ -189,13 +192,13 @@ public class PlayerMovement : MonoBehaviour {
 
     private void ApplySwingForce(float horizontalInput, Vector3 anchorPoint) {
         // Calculate the direction relative to the hand's anchored point
-        Vector3 directionToAnchor = (anchorPoint - playerRigidbody.position).normalized;
+        //Vector3 directionToAnchor = (anchorPoint - playerRigidbody.position).normalized;
 
         // Calculate a perpendicular direction for the swing force
-        Vector3 swingDirection = Vector3.Cross(directionToAnchor, Vector3.forward);
+        //Vector3 swingDirection = Vector3.Cross(directionToAnchor, Vector3.forward);
 
         // Apply force along the swing direction based on player input
-        playerRigidbody.AddForce(swingDirection * horizontalInput * swaySpeed, ForceMode.Force);
+        //playerRigidbody.AddForce(swingDirection * horizontalInput * swaySpeed, ForceMode.Force);
     }
 
     //private void MovePlayerTowards(RaycastHit leftRay, RaycastHit rightRay) {
@@ -306,52 +309,44 @@ public class PlayerMovement : MonoBehaviour {
             playerLeftArmTarget.position = lastLeftHandPosition;
             playerRightArmTarget.position = lastRightHandPosition;
         } else if (leftPickHit) {
+            if (leftJoint == null) {
+                // Create a joint for the left hand and anchor it to the hit point on the wall
+                leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
+                leftJoint.axis = Vector3.forward;
+                //leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // Connect the joint to the player's body (so the body moves)
+                leftJoint.autoConfigureConnectedAnchor = true;
+                //leftJoint.anchor = playerLeftArmTarget.position;  // Anchor at the hand's current position
+                leftJoint.connectedAnchor = leftRay.point;  // Hand is anchored to the hit point on the wall
+
+            }
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
                 // If the leftShoulder position and rightShoulder position are within the length of arms move
 
-                if (leftJoint == null) {
-                    // Create a joint for the left hand and anchor it to the hit point on the wall
-                    leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
-                    leftJoint.axis = Vector3.forward;
-                    leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // No connected body, fixed to the wall
-                    leftJoint.autoConfigureConnectedAnchor = true;
-                    //leftJoint.anchor = leftHitPoint;  // Anchor at the hand's current position
-                    //leftJoint.connectedAnchor = leftHitPoint;  // Hand is anchored to the hit point on the wall
+
+                //transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) * swaySpeed;
+                playerRigidbody.AddForce(swingDirection, ForceMode.Impulse);
+                playerLeftArmTarget.position = lastLeftHandPosition;
+
+            } else {
+
+
+                // Calculate future left shoulder position
+                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
+                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
+
+                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
+                    // If the future leftShoulder position are within the length of the arms move
+                    //transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                    Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) * swaySpeed;
+                    playerRigidbody.AddForce(swingDirection, ForceMode.Impulse);
+                    playerLeftArmTarget.position = lastLeftHandPosition;
+
                 }
+            }
+            // Reset left hand location
+            playerLeftArmTarget.position = lastLeftHandPosition;
 
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-                Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) *swaySpeed;
-            //playerLeftArmTarget.GetComponent<Rigidbody>().AddForce(swingDirection, ForceMode.Acceleration);
-            //playerRigidbody.AddForce(swingDirection, ForceMode.Acceleration);
-            //ApplySwing();
-        }
-        //else {
-
-
-        //    // Calculate future left shoulder position
-        //    Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
-        //    leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
-
-        //    if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
-
-        //        if (leftJoint == null) {
-        //            // Create a joint for the left hand and anchor it to the hit point on the wall
-        //            leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
-        //            leftJoint.axis = Vector3.forward;
-        //            leftJoint.connectedBody = leftRay.transform.gameObject.GetComponent<Rigidbody>();  // No connected body, fixed to the wall
-        //            leftJoint.autoConfigureConnectedAnchor = true;
-        //            //leftJoint.anchor = leftHitPoint;  // Anchor at the hand's current position
-        //            //leftJoint.connectedAnchor = leftHitPoint;  // Hand is anchored to the hit point on the wall
-        //        }
-        //        // If the future leftShoulder position are within the length of the arms move
-        //        transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-        //        Vector3 swingDirection = new Vector3(inputHandler.horizontalInput, inputHandler.verticalInput, 0f) * swaySpeed;
-        //        //playerLeftArmTarget.GetComponent<Rigidbody>().AddForce(swingDirection, ForceMode.Acceleration);
-        //        playerRigidbody.AddForce(swingDirection, ForceMode.Acceleration);
-        //    }
-        //}
-        // Reset left hand location
-        playerLeftArmTarget.position = lastLeftHandPosition;
         } else if (rightPickHit) {
             if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
                 // If the rightShoulder position are within the length of arms move
