@@ -11,7 +11,7 @@ public class ScoreManager : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
-        highestEle = currentEle.position.y;
+        highestEle = 0;
     }
 
     // Update is called once per frame
