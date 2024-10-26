@@ -77,16 +77,16 @@ public class PlayerMovement : MonoBehaviour {
 
     private void HandleArmMovement() {
 
-        // Calculate movement in world space
-        Vector3 globalMovement = (Vector3.up * inputHandler.verticalInput) + (Vector3.right * inputHandler.horizontalInput);
+        // Calculate movement in world space -Vector3.right so moving mouse right brings arms to the right mouse left arms to the right
+        Vector3 globalMovement = (Vector3.forward * inputHandler.verticalInput) + (-Vector3.right * inputHandler.horizontalInput);
         globalMovement.Normalize();
         globalMovement *= movementSpeed;
 
         // Switch the localspace movement of leftHand to world space
         Vector3 leftHandMovement = playerLeftHand.TransformDirection(globalMovement);
 
-        // Switch the localspace movement of rightHand to world space with flipped y axis
-        Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, -globalMovement.y, globalMovement.z));
+        // Switch the localspace movement of rightHand to world space with flipped movements
+        Vector3 rightHandMovement = playerRightHand.TransformDirection(-new Vector3(globalMovement.x, globalMovement.y, globalMovement.z));
 
         playerPosition = playerRigidbody.position;
 
