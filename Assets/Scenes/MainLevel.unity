@@ -7898,6 +7898,16 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1203269333}
   m_SourcePrefab: {fileID: 100100000, guid: a92356ca1d093bf49be5a49af6f1e410, type: 3}
+--- !u!4 &953216013 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6030425588215790930, guid: a92356ca1d093bf49be5a49af6f1e410, type: 3}
+  m_PrefabInstance: {fileID: 953216012}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &953216014 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7332421359924495710, guid: a92356ca1d093bf49be5a49af6f1e410, type: 3}
+  m_PrefabInstance: {fileID: 953216012}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &958337569 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4034599775934310, guid: a92356ca1d093bf49be5a49af6f1e410, type: 3}
@@ -8815,8 +8825,8 @@ MonoBehaviour:
   easyClimbLayer:
     serializedVersion: 2
     m_Bits: 64
-  leftPick: {fileID: 751276001}
-  rightPick: {fileID: 1925024576}
+  leftPick: {fileID: 953216014}
+  rightPick: {fileID: 953216013}
   maxMomentum: 20
 --- !u!114 &1203269336
 MonoBehaviour:

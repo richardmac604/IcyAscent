@@ -38,7 +38,7 @@ public class PlayerMovement : MonoBehaviour {
     // Joints
     private HingeJoint leftJoint;
     private HingeJoint rightJoint;
-    private float swaySpeed = 20f;
+    private float swaySpeed = 5f;
 
     public float maxMomentum = 20f; // Maximum momentum to carry
     private Vector3 accumulatedMomentum = Vector3.zero; // Momentum accumulator
@@ -77,42 +77,41 @@ public class PlayerMovement : MonoBehaviour {
 
     private void HandleArmMovement() {
 
-        // Calculate Left Hand movement from input
-        Vector3 leftHandMovement = playerLeftHand.up * inputHandler.verticalInput;
-        leftHandMovement += playerLeftHand.right * inputHandler.horizontalInput;
+        // Calculate movement in world space
+        Vector3 globalMovement = (Vector3.up * inputHandler.verticalInput) + (Vector3.right * inputHandler.horizontalInput);
+        globalMovement.Normalize();
+        globalMovement *= movementSpeed;
 
-        // Calculate Right Hand movement from input -playerRightHand.up since y axis is flipped in local space
-        Vector3 rightHandMovement = -playerRightHand.up * inputHandler.verticalInput;
-        rightHandMovement += playerRightHand.right * inputHandler.horizontalInput;
+        // Switch the localspace movement of leftHand to world space
+        Vector3 leftHandMovement = playerLeftHand.TransformDirection(globalMovement);
 
-        // Normalize the movement 
-        leftHandMovement.Normalize();
-        rightHandMovement.Normalize();
-
-        // Multiply by movespeed
-        leftHandMovement *= movementSpeed;
-        rightHandMovement *= movementSpeed;
+        // Switch the localspace movement of rightHand to world space with flipped y axis
+        Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, -globalMovement.y, globalMovement.z));
 
         playerPosition = playerRigidbody.position;
+
+        // Clamp Left Hand movement
         if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);  // Clamp to prevent crossing to the right side
+            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);
             leftHandMovement.z = 0;
         }
 
+        // Clamp Right Hand movement
         if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);  // Clamp to prevent crossing to the left side
+            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);
             rightHandMovement.z = 0;
         }
 
-        // Relocate leftArm and rightArm target
+        // Update arm target positions
         if (!leftPickHit) {
             playerLeftArmTarget.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
         }
         if (!rightPickHit) {
             playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
-
     }
+
+
 
     private void ApplyPhysics() {
         if (leftPickHit || rightPickHit) {
@@ -148,17 +147,22 @@ public class PlayerMovement : MonoBehaviour {
             // Left pickaxe hit the wall
             if (leftJoint == null) {
                 leftJoint = transform.gameObject.AddComponent<HingeJoint>();
-                //leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
                 leftJoint.axis = Vector3.forward;
 
-                leftJoint.anchor = playerLeftHand.position - transform.position;
-                leftJoint.connectedAnchor = leftHit - playerLeftHand.parent.position;
+                leftJoint.anchor = leftJoint.transform.InverseTransformPoint(leftPick.position);
+                leftJoint.connectedAnchor = leftHit;
+
+                leftJoint.useLimits = true;
+                JointLimits leftLimits = leftJoint.limits;
+                leftLimits.min = 25f;
+                leftLimits.max = 25f;
 
                 //leftJoint.useMotor = true; // Enable motor for swinging
                 //leftJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = 0 };
-                leftJoint.useAcceleration = true;
+                //leftJoint.useAcceleration = true;
             }
-
+            Debug.DrawRay(leftJoint.anchor, transform.forward * rayDistance, Color.blue);
+            Debug.DrawRay(leftJoint.connectedAnchor, transform.forward * rayDistance, Color.red);
         } 
         //else if (rightHit != Vector3.zero) {
         //    // Right pickaxe hit the wall
@@ -305,8 +309,8 @@ public class PlayerMovement : MonoBehaviour {
             MovePlayerTowards(rightHitPoint);
         }
 
-        Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
-        Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
+        //Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
+        //Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
     }
 
     private void MovePlayerTowards(Vector3 targetPosition) {
