@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour {
     private float swaySpeed = 5f;
 
     public float maxMomentum = 20f; // Maximum momentum to carry
-    private Vector3 accumulatedMomentum = Vector3.zero; // Momentum accumulator
+    private Vector3 accumulatedMomentum = Vector3.zero; // Player accumulatedMomentum
     private bool isSwinging = false; // Is the player currently swinging
 
 
@@ -78,7 +78,7 @@ public class PlayerMovement : MonoBehaviour {
     private void HandleArmMovement() {
 
         // Calculate movement in world space -Vector3.right so moving mouse right brings arms to the right mouse left arms to the right
-        Vector3 globalMovement = (Vector3.forward * inputHandler.verticalInput) + (-Vector3.right * inputHandler.horizontalInput);
+        Vector3 globalMovement = (Vector3.forward * inputHandler.verticalInput) + (Vector3.right * inputHandler.horizontalInput);
         globalMovement.Normalize();
         globalMovement *= movementSpeed;
 
@@ -86,7 +86,7 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 leftHandMovement = playerLeftHand.TransformDirection(globalMovement);
 
         // Switch the localspace movement of rightHand to world space with flipped movements
-        Vector3 rightHandMovement = playerRightHand.TransformDirection(-new Vector3(globalMovement.x, globalMovement.y, globalMovement.z));
+        Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, -globalMovement.z));
 
         playerPosition = playerRigidbody.position;
 
@@ -114,31 +114,39 @@ public class PlayerMovement : MonoBehaviour {
 
 
     private void ApplyPhysics() {
-        if (leftPickHit || rightPickHit) {
-            // Gradually reduce the vertical velocity towards zero
-            if (playerRigidbody.velocity.y > 0) {
-                // If moving up, decrease the upward velocity
-                playerRigidbody.velocity += Vector3.down * velocityResetSpeed * Time.deltaTime;
-            } else if (playerRigidbody.velocity.y < 0) {
-                // If moving down, increase the downward velocity towards zero
-                playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
-            }
+        //if (leftPickHit || rightPickHit) {
+        //    // Gradually reduce the vertical velocity towards zero
+        //    if (playerRigidbody.velocity.y > 0) {
+        //        // If moving up, decrease the upward velocity
+        //        playerRigidbody.velocity += Vector3.down * velocityResetSpeed * Time.deltaTime;
+        //    } else if (playerRigidbody.velocity.y < 0) {
+        //        // If moving down, increase the downward velocity towards zero
+        //        playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
+        //    }
 
             // Ensure the vertical velocity does not go below 0.1
             if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
                 playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
             }
-        } else {
+        //} else {
             // Apply gravity when no pick in wall
             playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
-        }
+        //}
     }
 
     private void DestroyJoints() {
         //Debug.Log("Destroying Joints");
         //Debug.Log($"LeftPickHit:{leftPickHit}\nLeft Joint: {leftJoint}\nRightPickHit:{rightPickHit}\nRight Joint: {rightJoint}");
-        if (!leftPickHit && leftJoint != null) Destroy(leftJoint);
-        if (!rightPickHit && rightJoint != null) Destroy(rightJoint);
+        if (!leftPickHit && leftJoint != null) {
+            Destroy(leftJoint);
+            //ReleaseSwing();
+            isSwinging = false;
+        }
+        if (!rightPickHit && rightJoint != null) {
+            Destroy(rightJoint);
+            //ReleaseSwing();
+            isSwinging = false;
+        }
     }
 
     private void CreateJoints(Vector3 leftHit, Vector3 rightHit) {
@@ -157,28 +165,21 @@ public class PlayerMovement : MonoBehaviour {
                 leftLimits.min = 25f;
                 leftLimits.max = 25f;
 
-                //leftJoint.useMotor = true; // Enable motor for swinging
-                //leftJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = 0 };
-                //leftJoint.useAcceleration = true;
             }
-            Debug.DrawRay(leftJoint.anchor, transform.forward * rayDistance, Color.blue);
-            Debug.DrawRay(leftJoint.connectedAnchor, transform.forward * rayDistance, Color.red);
-        } 
-        //else if (rightHit != Vector3.zero) {
-        //    // Right pickaxe hit the wall
-        //    if (rightJoint == null) {
-        //        rightJoint = transform.gameObject.AddComponent<HingeJoint>();
-        //        //leftJoint = playerLeftArmTarget.gameObject.AddComponent<HingeJoint>();
-        //        rightJoint.axis = Vector3.forward;
+        } else if (rightHit != Vector3.zero) {
+            // Right pickaxe hit the wall
+            if (rightJoint == null) {
+                rightJoint = transform.gameObject.AddComponent<HingeJoint>();
+                rightJoint.axis = Vector3.forward;
 
-        //        rightJoint.anchor = playerRightHand.position - transform.position;
-        //        rightJoint.connectedAnchor = rightHit - playerRightHand.parent.position;
-
-        //        rightJoint.useMotor = true; // Enable motor for swinging
-        //        rightJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = 0 };
-        //        rightJoint.useAcceleration = true;
-        //    }
-        //}
+                rightJoint.anchor = rightJoint.transform.InverseTransformPoint(rightPick.position);
+                rightJoint.connectedAnchor = rightHit;
+                rightJoint.useLimits = true;
+                JointLimits rightLimits = rightJoint.limits;
+                rightLimits.min = 25f;
+                rightLimits.max = 25f;
+            }
+        }
     }
     void ReleaseSwing() {
         isSwinging = false;
@@ -255,14 +256,16 @@ public class PlayerMovement : MonoBehaviour {
             // Left pickaxe hit the wall
             float horizontalInput = inputHandler.horizontalInput; // Climbing input
             //leftJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = horizontalInput * swaySpeed };
-            playerRigidbody.AddForce(new Vector3(horizontalInput*swaySpeed,0,0), ForceMode.Acceleration);
+            playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+            isSwinging = true;
 
             playerLeftArmTarget.position = lastLeftHandPosition;
 
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
             float horizontalInput = inputHandler.horizontalInput; // Climbing input
-            rightJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = horizontalInput * swaySpeed };
+            playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+            isSwinging = true;
 
             playerRightArmTarget.position = lastRightHandPosition;
         }
@@ -305,8 +308,8 @@ public class PlayerMovement : MonoBehaviour {
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the rightPickaxeHit location
             rightHitPoint = rightPickaxeHitPoint.point;
             lastRightHandPosition = playerRightHand.position;
-            //AttachJoint(Vector3.zero, rightHitPoint);
-            MovePlayerTowards(rightHitPoint);
+            AttachJoint(Vector3.zero, rightHitPoint);
+            //MovePlayerTowards(rightHitPoint);
         }
 
         //Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
