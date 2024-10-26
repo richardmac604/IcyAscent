@@ -42,8 +42,6 @@ public class PlayerMovement : MonoBehaviour {
 
     public float maxMomentum = 20f; // Maximum momentum to carry
     private Vector3 accumulatedMomentum = Vector3.zero; // Player accumulatedMomentum
-    private bool isSwinging = false; // Is the player currently swinging
-
 
 
     // Physics
@@ -124,13 +122,13 @@ public class PlayerMovement : MonoBehaviour {
         //        playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
         //    }
 
-            // Ensure the vertical velocity does not go below 0.1
-            if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
-                playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
-            }
+        // Ensure the vertical velocity does not go below 0.1
+        if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
+            playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
+        }
         //} else {
-            // Apply gravity when no pick in wall
-            playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
+        // Apply gravity when no pick in wall
+        playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
         //}
     }
 
@@ -139,13 +137,9 @@ public class PlayerMovement : MonoBehaviour {
         //Debug.Log($"LeftPickHit:{leftPickHit}\nLeft Joint: {leftJoint}\nRightPickHit:{rightPickHit}\nRight Joint: {rightJoint}");
         if (!leftPickHit && leftJoint != null) {
             Destroy(leftJoint);
-            //ReleaseSwing();
-            isSwinging = false;
         }
         if (!rightPickHit && rightJoint != null) {
             Destroy(rightJoint);
-            //ReleaseSwing();
-            isSwinging = false;
         }
     }
 
@@ -160,13 +154,12 @@ public class PlayerMovement : MonoBehaviour {
                 leftJoint.anchor = leftJoint.transform.InverseTransformPoint(leftPick.position);
                 leftJoint.connectedAnchor = leftHit;
 
-                leftJoint.useLimits = true;
                 JointLimits leftLimits = leftJoint.limits;
-                leftLimits.min = -40f;
-                leftLimits.max = 40f;
+                leftLimits.min = -80f;
+                leftLimits.max = 80f;
                 leftLimits.bounciness = 0.2f;
                 leftJoint.limits = leftLimits;
-
+                leftJoint.useLimits = true;
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
@@ -177,38 +170,13 @@ public class PlayerMovement : MonoBehaviour {
                 rightJoint.anchor = rightJoint.transform.InverseTransformPoint(rightPick.position);
                 rightJoint.connectedAnchor = rightHit;
 
-                rightJoint.useLimits = true;
                 JointLimits rightLimits = rightJoint.limits;
-                rightLimits.min = -40f;
-                rightLimits.max = 40f;
+                rightLimits.min = -80f;
+                rightLimits.max = 80f;
                 rightLimits.bounciness = 0.2f;
                 rightJoint.limits = rightLimits;
+                rightJoint.useLimits = true;
             }
-        }
-    }
-    void ReleaseSwing() {
-        isSwinging = false;
-
-        // Calculate the current momentum based on swing speed and direction
-        Vector3 swingDirection = playerLeftHand.forward; // or any direction of your choice
-        float swingForce = swaySpeed; // Use your swing speed here
-
-        // Accumulate momentum (clamped to maxMomentum)
-        accumulatedMomentum += swingDirection * swingForce;
-        accumulatedMomentum = Vector3.ClampMagnitude(accumulatedMomentum, maxMomentum);
-    }
-
-    void ApplyMomentum() {
-        // Apply the accumulated momentum to the player Rigidbody
-        playerRigidbody.AddForce(accumulatedMomentum, ForceMode.Impulse);
-        accumulatedMomentum = Vector3.zero; // Reset momentum after applying
-    }
-
-    private void OnCollisionEnter(Collision collision) {
-        // Reset momentum if the pickaxe hits a wall
-        if (collision.gameObject.CompareTag("Wall")) // Adjust based on your wall tag
-        {
-            accumulatedMomentum = Vector3.zero; // Reset momentum upon hitting a wall
         }
     }
 
@@ -218,51 +186,11 @@ public class PlayerMovement : MonoBehaviour {
 
         if (leftHit != Vector3.zero && rightHit != Vector3.zero) {
             DestroyJoints();
-            // Both pickaxes hit the wall
-            Vector3 targetPosition = (leftHit + rightHit) / 2;
-            // Calculate the direction to the target position (pickaxe hit point)
-            Vector3 direction = (targetPosition - transform.position).normalized;
-            direction.z = 0f;
 
-            float verticalInput = inputHandler.verticalInput; // Climbing input
-            float horizontalInput = inputHandler.horizontalInput; // Climbing input
-
-            // Determine how much to move vertically based on input
-            Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
-
-            // Calculate the new position by moving the player towards the target position
-            Vector3 newPosition = transform.position + movement;
-
-            // Zero out the Z component to ensure movement only happens in the X and Y axis
-            newPosition.z = transform.position.z;
-            newPosition.y = Mathf.Clamp(newPosition.y, transform.position.y - 20f, targetPosition.y + 10f);
-
-            Vector3 leftShoulderToHandVector = playerLeftShoulder.position - lastLeftHandPosition;
-            Vector3 rightShoulderToHandVector = playerRightShoulder.position - lastRightHandPosition;
-
-            if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
-                // If the leftShoulder position and rightShoulder position are within the length of arms move
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-            } else {
-                // Calculate future left shoulder position
-                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
-                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
-
-                // Calculate future right shoulder position
-                Vector3 simulatedRightShoulderPos = newPosition + (playerRightShoulder.position - transform.position);
-                rightShoulderToHandVector = simulatedRightShoulderPos - lastRightHandPosition;
-
-                // If the future leftShoulder and rightShoulder position are within the length of arms move
-                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
-                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-                }
-            }
         } else if (leftHit != Vector3.zero) {
             // Left pickaxe hit the wall
             float horizontalInput = inputHandler.horizontalInput; // Climbing input
-            //leftJoint.motor = new JointMotor { force = swaySpeed, targetVelocity = horizontalInput * swaySpeed };
             playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
-            isSwinging = true;
 
             playerLeftArmTarget.position = lastLeftHandPosition;
 
@@ -270,7 +198,6 @@ public class PlayerMovement : MonoBehaviour {
             // Right pickaxe hit the wall
             float horizontalInput = inputHandler.horizontalInput; // Climbing input
             playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
-            isSwinging = true;
 
             playerRightArmTarget.position = lastRightHandPosition;
         }
@@ -297,7 +224,6 @@ public class PlayerMovement : MonoBehaviour {
             lastLeftHandPosition = playerLeftHand.position;
             lastRightHandPosition = playerRightHand.position;
             Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
-            //AttachJoint(leftHitPoint, rightHitPoint);
             MovePlayerTowards(targetPosition);
 
         } else if (leftPickHit) {
@@ -305,7 +231,6 @@ public class PlayerMovement : MonoBehaviour {
             // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the leftPickaxeHit location
             leftHitPoint = leftPickaxeHitPoint.point;
             lastLeftHandPosition = playerLeftHand.position;
-            //MovePlayerTowards(leftHitPoint);
             AttachJoint(leftHitPoint, Vector3.zero);
 
         } else if (rightPickHit) {
@@ -314,7 +239,6 @@ public class PlayerMovement : MonoBehaviour {
             rightHitPoint = rightPickaxeHitPoint.point;
             lastRightHandPosition = playerRightHand.position;
             AttachJoint(Vector3.zero, rightHitPoint);
-            //MovePlayerTowards(rightHitPoint);
         }
 
         //Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
