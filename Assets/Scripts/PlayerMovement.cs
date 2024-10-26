@@ -155,29 +155,34 @@ public class PlayerMovement : MonoBehaviour {
             // Left pickaxe hit the wall
             if (leftJoint == null) {
                 leftJoint = transform.gameObject.AddComponent<HingeJoint>();
-                leftJoint.axis = Vector3.forward;
+                leftJoint.axis = transform.InverseTransformDirection(Vector3.forward);
 
                 leftJoint.anchor = leftJoint.transform.InverseTransformPoint(leftPick.position);
                 leftJoint.connectedAnchor = leftHit;
 
                 leftJoint.useLimits = true;
                 JointLimits leftLimits = leftJoint.limits;
-                leftLimits.min = 25f;
-                leftLimits.max = 25f;
+                leftLimits.min = -40f;
+                leftLimits.max = 40f;
+                leftLimits.bounciness = 0.2f;
+                leftJoint.limits = leftLimits;
 
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
             if (rightJoint == null) {
                 rightJoint = transform.gameObject.AddComponent<HingeJoint>();
-                rightJoint.axis = Vector3.forward;
+                rightJoint.axis = transform.InverseTransformDirection(Vector3.forward);
 
                 rightJoint.anchor = rightJoint.transform.InverseTransformPoint(rightPick.position);
                 rightJoint.connectedAnchor = rightHit;
+
                 rightJoint.useLimits = true;
                 JointLimits rightLimits = rightJoint.limits;
-                rightLimits.min = 25f;
-                rightLimits.max = 25f;
+                rightLimits.min = -40f;
+                rightLimits.max = 40f;
+                rightLimits.bounciness = 0.2f;
+                rightJoint.limits = rightLimits;
             }
         }
     }
