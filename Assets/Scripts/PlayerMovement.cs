@@ -34,7 +34,6 @@ public class PlayerMovement : MonoBehaviour {
     bool leftPickHit = false;
     bool rightPickHit = false;
 
-
     // Joints
     private HingeJoint leftJoint;
     private HingeJoint rightJoint;
@@ -43,10 +42,10 @@ public class PlayerMovement : MonoBehaviour {
     public float maxMomentum = 20f; // Maximum momentum to carry
     private Vector3 accumulatedMomentum = Vector3.zero; // Player accumulatedMomentum
 
-
     // Physics
     private const float GRAVITY = -9.8f;
     private float velocityResetSpeed = 5f;
+
 
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
@@ -187,19 +186,8 @@ public class PlayerMovement : MonoBehaviour {
         if (leftHit != Vector3.zero && rightHit != Vector3.zero) {
             DestroyJoints();
 
-        } else if (leftHit != Vector3.zero) {
-            // Left pickaxe hit the wall
-            float horizontalInput = inputHandler.horizontalInput; // Climbing input
-            playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
-
-            playerLeftArmTarget.position = lastLeftHandPosition;
-
-        } else if (rightHit != Vector3.zero) {
-            // Right pickaxe hit the wall
-            float horizontalInput = inputHandler.horizontalInput; // Climbing input
-            playerRigidbody.AddForce(new Vector3(horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
-
-            playerRightArmTarget.position = lastRightHandPosition;
+        } else {
+            playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
         }
 
     }
@@ -241,8 +229,6 @@ public class PlayerMovement : MonoBehaviour {
             AttachJoint(Vector3.zero, rightHitPoint);
         }
 
-        //Debug.DrawRay(leftPick.position, transform.forward * rayDistance, Color.red);
-        //Debug.DrawRay(rightPick.position, transform.forward * rayDistance, Color.red);
     }
 
     private void MovePlayerTowards(Vector3 targetPosition) {
