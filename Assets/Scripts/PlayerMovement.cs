@@ -36,7 +36,9 @@ public class PlayerMovement : MonoBehaviour {
 
     // Joints
     private HingeJoint leftJoint;
-    private HingeJoint rightJoint;
+    private HingeJoint rightJoint; 
+    private ConfigurableJoint leftCJoint;
+    private ConfigurableJoint rightCJoint;
     private float swaySpeed = 5f;
 
     public float maxMomentum = 20f; // Maximum momentum to carry
@@ -109,7 +111,6 @@ public class PlayerMovement : MonoBehaviour {
     }
 
 
-
     private void ApplyPhysics() {
         //if (leftPickHit || rightPickHit) {
         //    // Gradually reduce the vertical velocity towards zero
@@ -121,24 +122,24 @@ public class PlayerMovement : MonoBehaviour {
         //        playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
         //    }
 
-        // Ensure the vertical velocity does not go below 0.1
-        if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
-            playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
-        }
+        //    // Ensure the vertical velocity does not go below 0.1
+        //    if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
+        //        playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
+        //    }
         //} else {
-        // Apply gravity when no pick in wall
-        playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
+            //Apply gravity when no pick in wall
+            playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
         //}
     }
 
     private void DestroyJoints() {
         //Debug.Log("Destroying Joints");
         //Debug.Log($"LeftPickHit:{leftPickHit}\nLeft Joint: {leftJoint}\nRightPickHit:{rightPickHit}\nRight Joint: {rightJoint}");
-        if (!leftPickHit && leftJoint != null) {
-            Destroy(leftJoint);
+        if (!leftPickHit && leftCJoint != null) {
+            Destroy(leftCJoint);
         }
-        if (!rightPickHit && rightJoint != null) {
-            Destroy(rightJoint);
+        if (!rightPickHit && rightCJoint != null) {
+            Destroy(rightCJoint);
         }
     }
 
@@ -146,35 +147,67 @@ public class PlayerMovement : MonoBehaviour {
 
         if (leftHit != Vector3.zero) {
             // Left pickaxe hit the wall
-            if (leftJoint == null) {
-                leftJoint = transform.gameObject.AddComponent<HingeJoint>();
-                leftJoint.axis = transform.InverseTransformDirection(Vector3.forward);
+            if (leftCJoint == null) {
+                leftCJoint = transform.gameObject.AddComponent<ConfigurableJoint>();
 
-                leftJoint.anchor = leftJoint.transform.InverseTransformPoint(leftPick.position);
-                leftJoint.connectedAnchor = leftHit;
+                leftCJoint.anchor = leftCJoint.transform.InverseTransformPoint(leftPick.position);
+                leftCJoint.connectedAnchor = leftHit;
 
-                JointLimits leftLimits = leftJoint.limits;
-                leftLimits.min = -80f;
-                leftLimits.max = 80f;
-                leftLimits.bounciness = 0.2f;
-                leftJoint.limits = leftLimits;
-                leftJoint.useLimits = true;
+                // Set primary and secondary axes for stability and control
+                leftCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
+                leftCJoint.secondaryAxis = Vector3.right;
+
+                // Limit unwanted motion to keep player upright
+                leftCJoint.xMotion = ConfigurableJointMotion.Locked;
+                leftCJoint.yMotion = ConfigurableJointMotion.Locked;
+                leftCJoint.zMotion = ConfigurableJointMotion.Locked;
+
+                // Only allow free rotation on x axis
+                leftCJoint.angularXMotion = ConfigurableJointMotion.Limited;
+                leftCJoint.angularYMotion = ConfigurableJointMotion.Locked;
+                leftCJoint.angularZMotion = ConfigurableJointMotion.Locked;
+
+                // Swing angle limits
+                SoftJointLimit swingLimit = new SoftJointLimit();
+                swingLimit.bounciness = 0.2f;
+                swingLimit.limit = -80f;
+                leftCJoint.lowAngularXLimit = swingLimit;
+                swingLimit.limit = 80f;
+                leftCJoint.highAngularXLimit = swingLimit;
+
+
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
-            if (rightJoint == null) {
-                rightJoint = transform.gameObject.AddComponent<HingeJoint>();
-                rightJoint.axis = transform.InverseTransformDirection(Vector3.forward);
+            if (rightCJoint == null) {
 
-                rightJoint.anchor = rightJoint.transform.InverseTransformPoint(rightPick.position);
-                rightJoint.connectedAnchor = rightHit;
+                rightCJoint = transform.gameObject.AddComponent<ConfigurableJoint>();
 
-                JointLimits rightLimits = rightJoint.limits;
-                rightLimits.min = -80f;
-                rightLimits.max = 80f;
-                rightLimits.bounciness = 0.2f;
-                rightJoint.limits = rightLimits;
-                rightJoint.useLimits = true;
+                rightCJoint.anchor = rightCJoint.transform.InverseTransformPoint(rightPick.position);
+                rightCJoint.connectedAnchor = rightHit;
+
+                // Set primary and secondary axes for stability and control
+                rightCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
+                rightCJoint.secondaryAxis = Vector3.right;
+
+                // Limit unwanted motion to keep player upright
+                rightCJoint.xMotion = ConfigurableJointMotion.Locked;
+                rightCJoint.yMotion = ConfigurableJointMotion.Locked;
+                rightCJoint.zMotion = ConfigurableJointMotion.Locked;
+
+                // Only allow free rotation on x axis
+                rightCJoint.angularXMotion = ConfigurableJointMotion.Limited;
+                rightCJoint.angularYMotion = ConfigurableJointMotion.Locked;
+                rightCJoint.angularZMotion = ConfigurableJointMotion.Locked;
+
+                // Swing angle limits
+                SoftJointLimit swingLimit = new SoftJointLimit();
+                swingLimit.bounciness = 0.2f;
+                swingLimit.limit = -80f;
+                rightCJoint.lowAngularXLimit = swingLimit;
+                swingLimit.limit = 80f;
+                rightCJoint.highAngularXLimit = swingLimit;
+
             }
         }
     }
@@ -187,6 +220,8 @@ public class PlayerMovement : MonoBehaviour {
             DestroyJoints();
 
         } else {
+            //Vector3 swayDirection = Vector3.right * inputHandler.horizontalInput;
+            //playerRigidbody.AddForce(swayDirection * swaySpeed, ForceMode.Acceleration);
             playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
         }
 
