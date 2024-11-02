@@ -30,23 +30,16 @@ public class PlayerMovement : MonoBehaviour {
     public LayerMask easyClimbLayer;
     public Transform leftPick;
     public Transform rightPick;
-    public const float pullUpSpeed = 2f;
+    public const float pullUpSpeed = 5f;
     bool leftPickHit = false;
     bool rightPickHit = false;
 
     // Joints
-    private HingeJoint leftJoint;
-    private HingeJoint rightJoint; 
     private ConfigurableJoint leftCJoint;
     private ConfigurableJoint rightCJoint;
-    private float swaySpeed = 5f;
-
-    public float maxMomentum = 20f; // Maximum momentum to carry
-    private Vector3 accumulatedMomentum = Vector3.zero; // Player accumulatedMomentum
-
-    // Physics
-    private const float GRAVITY = -9.8f;
-    private float velocityResetSpeed = 5f;
+    private bool isSwinging = false;
+    private float swaySpeed = 2f;
+    public float maxMomentum = 2f; // Maximum swing momentum
 
 
     private void Awake() {
@@ -89,17 +82,17 @@ public class PlayerMovement : MonoBehaviour {
 
         playerPosition = playerRigidbody.position;
 
-        // Clamp Left Hand movement
-        if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-            leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);
-            leftHandMovement.z = 0;
-        }
+        //// Clamp Left Hand movement
+        //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
+        //    leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);
+        //    leftHandMovement.z = 0;
+        //}
 
-        // Clamp Right Hand movement
-        if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-            rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);
-            rightHandMovement.z = 0;
-        }
+        //// Clamp Right Hand movement
+        //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
+        //    rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);
+        //    rightHandMovement.z = 0;
+        //}
 
         // Update arm target positions
         if (!leftPickHit) {
@@ -112,34 +105,28 @@ public class PlayerMovement : MonoBehaviour {
 
 
     private void ApplyPhysics() {
-        //if (leftPickHit || rightPickHit) {
-        //    // Gradually reduce the vertical velocity towards zero
-        //    if (playerRigidbody.velocity.y > 0) {
-        //        // If moving up, decrease the upward velocity
-        //        playerRigidbody.velocity += Vector3.down * velocityResetSpeed * Time.deltaTime;
-        //    } else if (playerRigidbody.velocity.y < 0) {
-        //        // If moving down, increase the downward velocity towards zero
-        //        playerRigidbody.velocity += Vector3.up * velocityResetSpeed * Time.deltaTime;
-        //    }
-
-        //    // Ensure the vertical velocity does not go below 0.1
-        //    if (Mathf.Abs(playerRigidbody.velocity.y) < 0.1f) {
-        //        playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, 0, playerRigidbody.velocity.z);
-        //    }
-        //} else {
-            //Apply gravity when no pick in wall
-            playerRigidbody.AddForce(Physics.gravity, ForceMode.Acceleration);
-        //}
+        if (isSwinging) {
+            playerRigidbody.useGravity = true;
+        } else if (leftPickHit && rightPickHit) {
+            playerRigidbody.velocity = Vector3.zero;
+            playerRigidbody.angularVelocity = Vector3.zero;
+            playerRigidbody.useGravity = false;
+        }
     }
 
     private void DestroyJoints() {
-        //Debug.Log("Destroying Joints");
-        //Debug.Log($"LeftPickHit:{leftPickHit}\nLeft Joint: {leftJoint}\nRightPickHit:{rightPickHit}\nRight Joint: {rightJoint}");
+        if (rightPickHit && leftPickHit) {
+            Destroy(rightCJoint);
+            Destroy(leftCJoint);
+            isSwinging = false;
+        }
         if (!leftPickHit && leftCJoint != null) {
             Destroy(leftCJoint);
+            isSwinging = false;
         }
         if (!rightPickHit && rightCJoint != null) {
             Destroy(rightCJoint);
+            isSwinging = false;
         }
     }
 
@@ -155,7 +142,7 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Set primary and secondary axes for stability and control
                 leftCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                leftCJoint.secondaryAxis = Vector3.right;
+                leftCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 leftCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -169,13 +156,12 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Swing angle limits
                 SoftJointLimit swingLimit = new SoftJointLimit();
-                swingLimit.bounciness = 0.2f;
-                swingLimit.limit = -80f;
+                swingLimit.bounciness = 0.3f;
+                swingLimit.limit = -120f;
                 leftCJoint.lowAngularXLimit = swingLimit;
-                swingLimit.limit = 80f;
+                swingLimit.limit = 120f;
                 leftCJoint.highAngularXLimit = swingLimit;
-
-
+                leftCJoint.enablePreprocessing = false;
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
@@ -188,7 +174,7 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Set primary and secondary axes for stability and control
                 rightCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                rightCJoint.secondaryAxis = Vector3.right;
+                rightCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 rightCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -202,12 +188,12 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Swing angle limits
                 SoftJointLimit swingLimit = new SoftJointLimit();
-                swingLimit.bounciness = 0.2f;
-                swingLimit.limit = -80f;
+                swingLimit.bounciness = 0.3f;
+                swingLimit.limit = -120f;
                 rightCJoint.lowAngularXLimit = swingLimit;
-                swingLimit.limit = 80f;
+                swingLimit.limit = 120f;
                 rightCJoint.highAngularXLimit = swingLimit;
-
+                rightCJoint.enablePreprocessing = false;
             }
         }
     }
@@ -218,11 +204,11 @@ public class PlayerMovement : MonoBehaviour {
 
         if (leftHit != Vector3.zero && rightHit != Vector3.zero) {
             DestroyJoints();
-
         } else {
-            //Vector3 swayDirection = Vector3.right * inputHandler.horizontalInput;
-            //playerRigidbody.AddForce(swayDirection * swaySpeed, ForceMode.Acceleration);
-            playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+            isSwinging = true;
+            if (math.abs(playerRigidbody.angularVelocity.x) <= maxMomentum) {
+                playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+            }
         }
 
     }
@@ -267,7 +253,7 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     private void MovePlayerTowards(Vector3 targetPosition) {
-
+        isSwinging = false;
         // Calculate the direction to the target position (pickaxe hit point)
         Vector3 direction = (targetPosition - transform.position).normalized;
         direction.z = 0f;
@@ -277,7 +263,6 @@ public class PlayerMovement : MonoBehaviour {
 
         // Determine how much to move vertically based on input
         Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * pullUpSpeed * Time.deltaTime;
-        //movement.z = 0f;
 
         // Calculate the new position by moving the player towards the target position
         Vector3 newPosition = transform.position + movement;
@@ -294,7 +279,7 @@ public class PlayerMovement : MonoBehaviour {
         if (leftPickHit && rightPickHit) {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
                 // If the leftShoulder position and rightShoulder position are within the length of arms move
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                transform.position = Vector3.Lerp(transform.position,Vector3.MoveTowards(transform.position, newPosition, movement.magnitude), Time.fixedDeltaTime * pullUpSpeed);
             } else {
                 // Calculate future left shoulder position
                 Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
@@ -306,47 +291,13 @@ public class PlayerMovement : MonoBehaviour {
 
                 // If the future leftShoulder and rightShoulder position are within the length of arms move
                 if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
-                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
+                    transform.position = Vector3.Lerp(transform.position, Vector3.MoveTowards(transform.position, newPosition, movement.magnitude), Time.fixedDeltaTime * pullUpSpeed);
                 }
             }
             // Reset location of both hands
             playerLeftArmTarget.position = lastLeftHandPosition;
             playerRightArmTarget.position = lastRightHandPosition;
-        } else if (leftPickHit) {
-            if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
-                // If the leftShoulder position and rightShoulder position are within the length of arms move
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-            } else {
-                // Calculate future left shoulder position
-                Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
-                leftShoulderToHandVector = simulatedLeftShoulderPos - lastLeftHandPosition;
-
-                if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength) {
-                    // If the future leftShoulder position are within the length of the arms move
-                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-                }
-            }
-            // Reset left hand location
-            playerLeftArmTarget.position = lastLeftHandPosition;
-        } else if (rightPickHit) {
-            if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
-                // If the rightShoulder position are within the length of arms move
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-            } else {
-
-                // Calculate future right shoulder position
-                Vector3 simulatedRightShoulderPos = newPosition + (playerRightShoulder.position - transform.position);
-                rightShoulderToHandVector = simulatedRightShoulderPos - lastRightHandPosition;
-
-                if (rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
-                    // If the future rightShoulder position is within the length of arms move
-                    transform.position = Vector3.MoveTowards(transform.position, newPosition, movement.magnitude);
-                }
-            }
-            // Reset right hand location
-            playerRightArmTarget.position = lastRightHandPosition;
-        }
-
+        } 
     }
 
 }
