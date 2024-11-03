@@ -8806,7 +8806,6 @@ MonoBehaviour:
     m_Bits: 64
   leftPick: {fileID: 953216014}
   rightPick: {fileID: 953216013}
-  maxMomentum: 20
 --- !u!114 &1203269336
 MonoBehaviour:
   m_ObjectHideFlags: 0

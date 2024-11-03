@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour {
     private ConfigurableJoint rightCJoint;
     private bool isSwinging = false;
     private float swaySpeed = 2f;
-    public float maxMomentum = 2f; // Maximum swing momentum
+    private float maxMomentum = 3f; // Maximum swing momentum
 
 
     private void Awake() {
@@ -206,9 +206,25 @@ public class PlayerMovement : MonoBehaviour {
             DestroyJoints();
         } else {
             isSwinging = true;
-            if (math.abs(playerRigidbody.angularVelocity.x) <= maxMomentum) {
-                playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+
+            float angMag = playerRigidbody.angularVelocity.magnitude;
+            float mag = playerRigidbody.velocity.magnitude;
+
+            // Clamp linear velocity
+            if (mag > maxMomentum) {
+                Vector3 clampedVelocity = playerRigidbody.velocity.normalized * maxMomentum;
+                playerRigidbody.velocity = clampedVelocity;
             }
+
+            // Clamp angular velocity
+            if (angMag > maxMomentum) {
+                Vector3 clampedAngularVelocity = playerRigidbody.angularVelocity.normalized * maxMomentum;
+                playerRigidbody.angularVelocity = clampedAngularVelocity;
+            }
+
+            // Apply forces based on player input
+            playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+
         }
 
     }
@@ -279,7 +295,7 @@ public class PlayerMovement : MonoBehaviour {
         if (leftPickHit && rightPickHit) {
             if (leftShoulderToHandVector.magnitude < leftShoulderToHandLength && rightShoulderToHandVector.magnitude < rightShoulderToHandLength) {
                 // If the leftShoulder position and rightShoulder position are within the length of arms move
-                transform.position = Vector3.Lerp(transform.position,Vector3.MoveTowards(transform.position, newPosition, movement.magnitude), Time.fixedDeltaTime * pullUpSpeed);
+                transform.position = Vector3.Lerp(transform.position, Vector3.MoveTowards(transform.position, newPosition, movement.magnitude), Time.fixedDeltaTime * pullUpSpeed);
             } else {
                 // Calculate future left shoulder position
                 Vector3 simulatedLeftShoulderPos = newPosition + (playerLeftShoulder.position - transform.position);
@@ -297,7 +313,7 @@ public class PlayerMovement : MonoBehaviour {
             // Reset location of both hands
             playerLeftArmTarget.position = lastLeftHandPosition;
             playerRightArmTarget.position = lastRightHandPosition;
-        } 
+        }
     }
 
 }
