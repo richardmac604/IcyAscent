@@ -54,10 +54,8 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     private void Start() {
-
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.lockState = CursorLockMode.Confined;
     }
 
 
@@ -142,7 +140,7 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Set primary and secondary axes for stability and control
                 leftCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                leftCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
+                //leftCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 leftCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -150,17 +148,17 @@ public class PlayerMovement : MonoBehaviour {
                 leftCJoint.zMotion = ConfigurableJointMotion.Locked;
 
                 // Only allow free rotation on x axis
-                leftCJoint.angularXMotion = ConfigurableJointMotion.Limited;
+                leftCJoint.angularXMotion = ConfigurableJointMotion.Free;
                 leftCJoint.angularYMotion = ConfigurableJointMotion.Locked;
                 leftCJoint.angularZMotion = ConfigurableJointMotion.Locked;
 
                 // Swing angle limits
-                SoftJointLimit swingLimit = new SoftJointLimit();
-                swingLimit.bounciness = 0.3f;
-                swingLimit.limit = -120f;
-                leftCJoint.lowAngularXLimit = swingLimit;
-                swingLimit.limit = 120f;
-                leftCJoint.highAngularXLimit = swingLimit;
+                //SoftJointLimit swingLimit = new SoftJointLimit();
+                //swingLimit.bounciness = 0.3f;
+                //swingLimit.limit = -180f;
+                //leftCJoint.lowAngularXLimit = swingLimit;
+                //swingLimit.limit = 180f;
+                //leftCJoint.highAngularXLimit = swingLimit;
                 leftCJoint.enablePreprocessing = false;
             }
         } else if (rightHit != Vector3.zero) {
@@ -174,7 +172,7 @@ public class PlayerMovement : MonoBehaviour {
 
                 // Set primary and secondary axes for stability and control
                 rightCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                rightCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
+                //rightCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 rightCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -182,17 +180,17 @@ public class PlayerMovement : MonoBehaviour {
                 rightCJoint.zMotion = ConfigurableJointMotion.Locked;
 
                 // Only allow free rotation on x axis
-                rightCJoint.angularXMotion = ConfigurableJointMotion.Limited;
+                rightCJoint.angularXMotion = ConfigurableJointMotion.Free;
                 rightCJoint.angularYMotion = ConfigurableJointMotion.Locked;
                 rightCJoint.angularZMotion = ConfigurableJointMotion.Locked;
 
                 // Swing angle limits
-                SoftJointLimit swingLimit = new SoftJointLimit();
-                swingLimit.bounciness = 0.3f;
-                swingLimit.limit = -120f;
-                rightCJoint.lowAngularXLimit = swingLimit;
-                swingLimit.limit = 120f;
-                rightCJoint.highAngularXLimit = swingLimit;
+                //SoftJointLimit swingLimit = new SoftJointLimit();
+                //swingLimit.bounciness = 0.3f;
+                //swingLimit.limit = -180f;
+                //rightCJoint.lowAngularXLimit = swingLimit;
+                //swingLimit.limit = 180;
+                //rightCJoint.highAngularXLimit = swingLimit;
                 rightCJoint.enablePreprocessing = false;
             }
         }
