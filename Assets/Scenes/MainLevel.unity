@@ -349,6 +349,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallRock
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 4
@@ -590,6 +594,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Generic_Small_Rocks_05 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 100
@@ -675,6 +683,10 @@ PrefabInstance:
     - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_Name
       value: WallRock (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
@@ -924,6 +936,10 @@ PrefabInstance:
     - target: {fileID: 1825960760633310, guid: 097c26aede8f73e41a32d546bd00e97f, type: 3}
       propertyPath: m_Name
       value: SM_Generic_Small_Rocks_04
+      objectReference: {fileID: 0}
+    - target: {fileID: 1825960760633310, guid: 097c26aede8f73e41a32d546bd00e97f, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4423381248071784, guid: 097c26aede8f73e41a32d546bd00e97f, type: 3}
       propertyPath: m_LocalScale.x
@@ -6423,6 +6439,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallRock (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 8
@@ -6590,6 +6610,10 @@ PrefabInstance:
     - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_Name
       value: WallRock (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
@@ -8186,6 +8210,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Generic_Small_Rocks_04 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1825960760633310, guid: 097c26aede8f73e41a32d546bd00e97f, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4423381248071784, guid: 097c26aede8f73e41a32d546bd00e97f, type: 3}
       propertyPath: m_LocalScale.x
       value: 10
@@ -9131,6 +9159,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Generic_Small_Rocks_05 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 400
@@ -9862,7 +9894,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1464337462}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SnowLevelMaterials
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10548,6 +10580,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Generic_Small_Rocks_03
       objectReference: {fileID: 0}
+    - target: {fileID: 1265567056653560, guid: 7f14e8833dc154b44b20de9e6f911ca0, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4143243110822604, guid: 7f14e8833dc154b44b20de9e6f911ca0, type: 3}
       propertyPath: m_LocalScale.x
       value: 50
@@ -10935,6 +10971,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallRock (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 8
@@ -11221,6 +11261,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallRock (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 1875828765980602, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4261006123550364, guid: 9c5ad4629ea7af7448f90e61ae1ea78d, type: 3}
       propertyPath: m_LocalScale.x
       value: 8
@@ -11340,7 +11384,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1958754903}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: RockLevelMaterials
   m_TagString: Untagged
   m_Icon: {fileID: 0}
