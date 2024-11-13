@@ -221,7 +221,7 @@ public class PlayerMovement : MonoBehaviour {
             }
 
             // Apply forces based on player input
-            playerRigidbody.AddForce(new Vector3(inputHandler.horizontalInput * swaySpeed, 0, 0), ForceMode.Acceleration);
+            playerRigidbody.AddForce(new Vector3(Mathf.Clamp(inputHandler.horizontalInput, -30f, 30f) * swaySpeed, 0, 0), ForceMode.Acceleration);
 
         }
 

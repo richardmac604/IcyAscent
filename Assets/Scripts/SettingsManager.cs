@@ -49,13 +49,14 @@ public class SettingsManager : MonoBehaviour
 
     bool togglePause()
     {
-        if (Time.timeScale == 0f)
-        {
+        if (Time.timeScale == 0f) {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
             Time.timeScale = 1.0f;
             return (false);
-        }
-        else
-        {
+        } else {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             Time.timeScale = 0f;
             return (true);
         }
