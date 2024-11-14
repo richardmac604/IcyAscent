@@ -16,7 +16,7 @@ TagManager:
   - FloorLayer
   - UnclimbableLayer
   - Slippery
-  - 
+  - IgnoreCollisionOnSelf
   - 
   - 
   - 
