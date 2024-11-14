@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class PlayerMovement : MonoBehaviour {
 
@@ -25,9 +27,12 @@ public class PlayerMovement : MonoBehaviour {
 
     private Vector3 playerPosition;
 
+    public float armForwardOffset = 100f; // Adjust this value to control how forward the arms extend
+
+
     // Pickaxe use
     private float rayDistance = 50f;
-    public LayerMask easyClimbLayer;
+    public LayerMask layermask;
     public Transform leftPick;
     public Transform rightPick;
     public const float pullUpSpeed = 5f;
@@ -40,6 +45,16 @@ public class PlayerMovement : MonoBehaviour {
     private bool isSwinging = false;
     private float swaySpeed = 2f;
     private float maxMomentum = 3f; // Maximum swing momentum
+
+    //Particles
+    [SerializeField] private ParticleSystem iceParticles;
+    private ParticleSystem iceParticlesInstance;
+    private bool leftIceParticleSpawned = false;
+    private bool rightIceParticleSpawned = false;
+
+    //audio
+    public AudioSource iceHitEffect;
+    public AudioSource snowHitEffect;
 
 
     private void Awake() {
@@ -65,38 +80,29 @@ public class PlayerMovement : MonoBehaviour {
         ApplyPhysics();
     }
 
-    private void HandleArmMovement() {
-
-        // Calculate movement in world space -Vector3.right so moving mouse right brings arms to the right mouse left arms to the right
+    private void HandleArmMovement()
+    {
+        // Calculate movement in world space
         Vector3 globalMovement = (Vector3.forward * inputHandler.verticalInput) + (Vector3.right * inputHandler.horizontalInput);
         globalMovement.Normalize();
         globalMovement *= movementSpeed;
 
-        // Switch the localspace movement of leftHand to world space
-        Vector3 leftHandMovement = playerLeftHand.TransformDirection(globalMovement);
+        // Adjust for forward offset
+        Vector3 forwardOffset = transform.forward * armForwardOffset;
 
-        // Switch the localspace movement of rightHand to world space with flipped movements
-        Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, -globalMovement.z));
+        // Switch the local space movement of leftHand to world space and add offset
+        Vector3 leftHandMovement = playerLeftHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, globalMovement.z)) + forwardOffset;
 
-        playerPosition = playerRigidbody.position;
+        // Switch the local space movement of rightHand to world space with flipped movements and add offset
+        Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, -globalMovement.z)) + forwardOffset;
 
-        //// Clamp Left Hand movement
-        //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-        //    leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);
-        //    leftHandMovement.z = 0;
-        //}
-
-        //// Clamp Right Hand movement
-        //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-        //    rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);
-        //    rightHandMovement.z = 0;
-        //}
-
-        // Update arm target positions
-        if (!leftPickHit) {
+        // Update arm target positions with forward offset
+        if (!leftPickHit)
+        {
             playerLeftArmTarget.position = Vector3.Lerp(playerLeftHand.position, playerLeftHand.position + leftHandMovement, Time.deltaTime);
         }
-        if (!rightPickHit) {
+        if (!rightPickHit)
+        {
             playerRightArmTarget.position = Vector3.Lerp(playerRightHand.position, playerRightHand.position + rightHandMovement, Time.deltaTime);
         }
     }
@@ -227,21 +233,33 @@ public class PlayerMovement : MonoBehaviour {
 
     }
 
-    private void HandlePickaxeUse() {
+    private void HandlePickaxeUse()
+    {
         RaycastHit leftPickaxeHitPoint = new RaycastHit();
         RaycastHit rightPickaxeHitPoint = new RaycastHit();
         Vector3 leftHitPoint;
         Vector3 rightHitPoint;
 
         // Check if both mouse buttons are held down and the pickaxe hits a climbable surface
-        leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance, easyClimbLayer);
-        rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance, easyClimbLayer);
+        leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance);
+        rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance);
 
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(leftPick.position, transform.TransformDirection(Vector3.forward), out leftPickaxeHitPoint, Mathf.Infinity))
+
+        {
+            Debug.DrawRay(leftPick.position, transform.TransformDirection(Vector3.forward) * rayDistance, Color.red);
+            Debug.Log("Did Hit");
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
+            Debug.Log("Did not Hit");
+        }
         DestroyJoints();
 
-        if (leftPickHit && rightPickHit) {
-            // Both pickaxes hitting wall
-            // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput
+        if (leftPickHit && rightPickHit)
+        {
             leftHitPoint = leftPickaxeHitPoint.point;
             rightHitPoint = rightPickaxeHitPoint.point;
             lastLeftHandPosition = playerLeftHand.position;
@@ -249,21 +267,68 @@ public class PlayerMovement : MonoBehaviour {
             Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
             MovePlayerTowards(targetPosition);
 
-        } else if (leftPickHit) {
-            // Left pickaxe hitting wall
-            // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the leftPickaxeHit location
+            // Reset flags since both pickaxes are hitting the wall
+            leftIceParticleSpawned = false;
+            rightIceParticleSpawned = false;
+
+
+        }
+        else if (leftPickHit)
+        {
             leftHitPoint = leftPickaxeHitPoint.point;
             lastLeftHandPosition = playerLeftHand.position;
             AttachJoint(leftHitPoint, Vector3.zero);
 
-        } else if (rightPickHit) {
-            // Right pickaxe hitting wall
-            // Move entire player body depending on inputHandler.verticalInput and inputHandler.horizontalInput towards the rightPickaxeHit location
+            // Spawn particles only if not already spawned for this hit
+            if (!leftIceParticleSpawned)
+            {
+                spawnIceParticles(leftHitPoint);
+                hitsound(leftPickaxeHitPoint);
+                leftIceParticleSpawned = true;
+            }
+
+        }
+        else if (rightPickHit)
+        {
             rightHitPoint = rightPickaxeHitPoint.point;
             lastRightHandPosition = playerRightHand.position;
             AttachJoint(Vector3.zero, rightHitPoint);
-        }
 
+            // Spawn particles only if not already spawned for this hit
+            if (!rightIceParticleSpawned)
+            {
+                spawnIceParticles(rightHitPoint);
+                hitsound(rightPickaxeHitPoint);
+                rightIceParticleSpawned = true;
+            }
+        }
+        else
+        {
+            // Reset particle spawn flags when neither pickaxe is hitting
+            leftIceParticleSpawned = false;
+            rightIceParticleSpawned = false;
+        }
+    }
+
+    private void spawnIceParticles(Vector3 position)
+    {
+        iceParticlesInstance = Instantiate(iceParticles, position, Quaternion.identity);
+    }
+
+    private void hitsound(RaycastHit hitLayer)
+    {
+        int Layer = hitLayer.transform.gameObject.layer;
+        string layerName = LayerMask.LayerToName(Layer);
+        Debug.Log($"Hit Layer: {Layer} - Layer Name: {layerName}");
+
+        if (Layer == 6)
+        {
+           iceHitEffect.Play();
+        }
+        else if (Layer == 9)
+        {
+            snowHitEffect.Play();
+        }
     }
 
     private void MovePlayerTowards(Vector3 targetPosition) {
