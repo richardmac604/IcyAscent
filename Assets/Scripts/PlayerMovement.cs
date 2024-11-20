@@ -46,6 +46,8 @@ public class PlayerMovement : MonoBehaviour {
     //Particles
     [SerializeField] private ParticleSystem iceParticles;
     [SerializeField] private ParticleSystem SnowParticles;
+    [SerializeField] private ParticleSystem MetalParticles;
+    [SerializeField] private ParticleSystem WoodParticles;
     private ParticleSystem particleInstance;
     private bool leftIceParticleSpawned = false;
     private bool rightIceParticleSpawned = false;
@@ -53,6 +55,8 @@ public class PlayerMovement : MonoBehaviour {
     //audio
     public AudioSource iceHitEffect;
     public AudioSource snowHitEffect;
+    public AudioSource metalHitEffect;
+    public AudioSource woodHitEffect;
 
 
     private void Awake() {
@@ -316,6 +320,16 @@ public class PlayerMovement : MonoBehaviour {
         } else if (Layer == 9) {
             spawnParticles(position, SnowParticles);
             snowHitEffect.Play();
+        }
+        else if (Layer == 12)
+        {
+            spawnParticles(position, MetalParticles);
+            metalHitEffect.Play();
+        }
+        else if (Layer == 13)
+        {
+            spawnParticles(position, WoodParticles);
+            woodHitEffect.Play();
         }
     }
 
