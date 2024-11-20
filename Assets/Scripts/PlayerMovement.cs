@@ -46,7 +46,8 @@ public class PlayerMovement : MonoBehaviour
 
     //Particles
     [SerializeField] private ParticleSystem iceParticles;
-    private ParticleSystem iceParticlesInstance;
+    [SerializeField] private ParticleSystem SnowParticles;
+    private ParticleSystem particleInstance;
     private bool leftIceParticleSpawned = false;
     private bool rightIceParticleSpawned = false;
 
@@ -276,19 +277,7 @@ public class PlayerMovement : MonoBehaviour
         // Check if both mouse buttons are held down and the pickaxe hits a climbable surface
         leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance);
         rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance);
-
-        // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast(leftPick.position, transform.TransformDirection(Vector3.forward), out leftPickaxeHitPoint, Mathf.Infinity))
-
-        {
-            Debug.DrawRay(leftPick.position, transform.TransformDirection(Vector3.forward) * rayDistance, Color.red);
-            Debug.Log("Did Hit");
-        }
-        else
-        {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-            Debug.Log("Did not Hit");
-        }
+      
         DestroyJoints();
 
         if (leftPickHit && rightPickHit)
@@ -315,8 +304,8 @@ public class PlayerMovement : MonoBehaviour
             // Spawn particles only if not already spawned for this hit
             if (!leftIceParticleSpawned)
             {
-                spawnIceParticles(leftHitPoint);
-                hitsound(leftPickaxeHitPoint);
+             
+                hitsound(leftPickaxeHitPoint, leftHitPoint);
                 leftIceParticleSpawned = true;
             }
 
@@ -330,8 +319,8 @@ public class PlayerMovement : MonoBehaviour
             // Spawn particles only if not already spawned for this hit
             if (!rightIceParticleSpawned)
             {
-                spawnIceParticles(rightHitPoint);
-                hitsound(rightPickaxeHitPoint);
+               
+                hitsound(rightPickaxeHitPoint, rightHitPoint);
                 rightIceParticleSpawned = true;
             }
         }
@@ -343,12 +332,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void spawnIceParticles(Vector3 position)
+    private void spawnParticles(Vector3 position, ParticleSystem particleType)
     {
-        iceParticlesInstance = Instantiate(iceParticles, position, Quaternion.identity);
+        particleInstance = Instantiate(particleType, position, Quaternion.identity);
     }
 
-    private void hitsound(RaycastHit hitLayer)
+    private void hitsound(RaycastHit hitLayer, Vector3 position)
     {
         int Layer = hitLayer.transform.gameObject.layer;
         string layerName = LayerMask.LayerToName(Layer);
@@ -356,10 +345,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (Layer == 6)
         {
+            spawnParticles(position, iceParticles);
             iceHitEffect.Play();
         }
         else if (Layer == 9)
         {
+            spawnParticles(position, SnowParticles);
             snowHitEffect.Play();
         }
     }
