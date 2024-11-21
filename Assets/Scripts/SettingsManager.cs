@@ -8,6 +8,11 @@ public class SettingsManager : MonoBehaviour
     public GameObject audioObj;
     private bool isPaused = false;
 
+    private void Start()
+    {
+        audioObj = GameObject.Find("Music");
+    }
+
     void Update()
     {
         if (Input.GetKeyDown("p"))
@@ -58,7 +63,7 @@ public class SettingsManager : MonoBehaviour
 
             GUI.Label(
                 new Rect(Screen.width / 2 - 90, Screen.height / 2 + 15, 180, 35),
-                "Mute - M"
+                "Mute BG Music - M"
             );
         }
     }
