@@ -6,7 +6,7 @@ public class NightCtrl : MonoBehaviour
 {
     public GameObject nightTint;
     //public GameObject sunsetTint;
-    public GameObject sunriseTint;
+    //public GameObject sunriseTint;
     public Light lightSource;
     // Start is called before the first frame update
     void Start()
@@ -16,11 +16,11 @@ public class NightCtrl : MonoBehaviour
         
         nightTint = GameObject.Find("NightOverlay");
         //sunsetTint = GameObject.Find("SunsetOverlay");
-        sunriseTint = GameObject.Find("SunriseOverlay");
+        //sunriseTint = GameObject.Find("SunriseOverlay");
        
         nightTint.SetActive(false);
         //sunsetTint.SetActive(false);
-        sunriseTint.SetActive(false);
+        //sunriseTint.SetActive(false);
 
     }
 
@@ -36,15 +36,15 @@ public class NightCtrl : MonoBehaviour
         //{
         //    sunsetTint.SetActive(true);
         //}
-        else if (lightSource.transform.eulerAngles.x > 210 && lightSource.transform.eulerAngles.x < 360)
-        {
-            sunriseTint.SetActive(true);
+        //else if (lightSource.transform.eulerAngles.x > 210 && lightSource.transform.eulerAngles.x < 360)
+        //{
+        //    sunriseTint.SetActive(true);
 
-        } else
-        {
-            nightTint.SetActive(false);
-            //sunsetTint.SetActive(false);
-            sunriseTint.SetActive(false);
-        }
+        //} else
+        //{
+        //    nightTint.SetActive(false);
+        //    //sunsetTint.SetActive(false);
+        //    sunriseTint.SetActive(false);
+        //}
     }
 }
