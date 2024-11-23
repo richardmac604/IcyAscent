@@ -256,19 +256,9 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
 
-                // Handle left particles
-                if (!leftParticleSpawned) {
-                    PlayHitSound(iceHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, iceParticles);
-                    leftParticleSpawned = true;
-                }
-
-                // Handle right particles
-                if (!rightParticleSpawned) {
-                    PlayHitSound(iceHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, iceParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
 
                 break;
 
@@ -280,19 +270,9 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
 
-                // Handle left particles
-                if (!leftParticleSpawned) {
-                    PlayHitSound(woodHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, woodParticles);
-                    leftParticleSpawned = true;
-                }
-
-                // Handle right particles
-                if (!rightParticleSpawned) {
-                    PlayHitSound(woodHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, woodParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, woodParticles, woodHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, woodParticles, woodHitSound);
 
                 break;
 
@@ -302,13 +282,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastLeftHandPosition = playerLeftHand.position;
                 AttachJoint(leftHitPoint, Vector3.zero);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!leftParticleSpawned) {
-
-                    PlayHitSound(iceHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, iceParticles);
-                    leftParticleSpawned = true;
-                }
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
                 rightParticleSpawned = false;
 
                 break;
@@ -319,13 +294,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastLeftHandPosition = playerLeftHand.position;
                 AttachJoint(leftHitPoint, Vector3.zero);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!leftParticleSpawned) {
-
-                    PlayHitSound(woodHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, woodParticles);
-                    leftParticleSpawned = true;
-                }
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, woodParticles, woodHitSound);
                 rightParticleSpawned = false;
 
                 break;
@@ -336,13 +306,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastLeftHandPosition = playerLeftHand.position;
                 AttachJoint(leftHitPoint, Vector3.zero);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!leftParticleSpawned) {
-
-                    PlayHitSound(snowHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, snowParticles);
-                    leftParticleSpawned = true;
-                }
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, snowParticles, snowHitSound);
                 rightParticleSpawned = false;
 
                 break;
@@ -351,13 +316,8 @@ public class PlayerMovement : MonoBehaviour {
                 // Left Pickaxe hit ROCK surface
                 leftHitPoint = leftPickaxeHitPoint.point;
 
-                // Spawn particles only if not already spawned for this hit
-                if (!leftParticleSpawned) {
-
-                    PlayHitSound(metalHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, metalParticles);
-                    leftParticleSpawned = true;
-                }
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
                 rightParticleSpawned = false;
 
                 break;
@@ -368,13 +328,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastLeftHandPosition = playerLeftHand.position;
                 AttachJoint(leftHitPoint, Vector3.zero);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!leftParticleSpawned) {
-
-                    PlayHitSound(metalHitSound);
-                    spawnParticles(leftHitPoint, Vector3.zero, metalParticles);
-                    leftParticleSpawned = true;
-                }
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
                 rightParticleSpawned = false;
 
                 break;
@@ -385,12 +340,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 AttachJoint(Vector3.zero, rightHitPoint);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!rightParticleSpawned) {
-                    PlayHitSound(iceHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, iceParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
                 leftParticleSpawned = false;
 
                 break;
@@ -401,12 +352,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 AttachJoint(Vector3.zero, rightHitPoint);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!rightParticleSpawned) {
-                    PlayHitSound(woodHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, woodParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, woodParticles, woodHitSound);
                 leftParticleSpawned = false;
 
                 break;
@@ -417,12 +364,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 AttachJoint(Vector3.zero, rightHitPoint);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!rightParticleSpawned) {
-                    PlayHitSound(snowHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, snowParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, snowParticles, snowHitSound);
                 leftParticleSpawned = false;
 
                 break;
@@ -431,12 +374,8 @@ public class PlayerMovement : MonoBehaviour {
                 // Right Pickaxe hit ROCK surface
                 rightHitPoint = rightPickaxeHitPoint.point;
 
-                // Spawn particles only if not already spawned for this hit
-                if (!rightParticleSpawned) {
-                    PlayHitSound(metalHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, metalParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
                 leftParticleSpawned = false;
 
                 break;
@@ -447,12 +386,8 @@ public class PlayerMovement : MonoBehaviour {
                 lastRightHandPosition = playerRightHand.position;
                 AttachJoint(Vector3.zero, rightHitPoint);
 
-                // Spawn particles only if not already spawned for this hit
-                if (!rightParticleSpawned) {
-                    PlayHitSound(metalHitSound);
-                    spawnParticles(Vector3.zero, rightHitPoint, metalParticles);
-                    rightParticleSpawned = true;
-                }
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
                 leftParticleSpawned = false;
 
                 break;
@@ -499,6 +434,15 @@ public class PlayerMovement : MonoBehaviour {
     private void PlayHitSound(AudioSource soundEffect) {
         soundEffect.Play();
     }
+
+    private void HandleParticlesAndSound(Vector3 hitPoint, ref bool particleSpawnedFlag, ParticleSystem particles, AudioSource sound) {
+        if (!particleSpawnedFlag) {
+            PlayHitSound(sound);
+            spawnParticles(hitPoint, Vector3.zero, particles);
+            particleSpawnedFlag = true;
+        }
+    }
+
 
     private void MovePlayerTowards(Vector3 targetPosition) {
         isSwinging = false;
