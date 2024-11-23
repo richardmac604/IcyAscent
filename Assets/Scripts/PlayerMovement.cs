@@ -276,6 +276,45 @@ public class PlayerMovement : MonoBehaviour {
 
                 break;
 
+            case ("Ice", "Rock"):
+                // Left Pickaxe on Ice, Right Pickaxe on Rock
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
+
+                break;
+
+            case ("Rock", "Ice"):
+                // Right Pickaxe on Ice, Left Pickaxe on Rock
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
+
+                break;
+
+            case ("Rock", "Rock"):
+                // Both Pickaxes hit Rock
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
+
+                break;
+
             case ("Ice", null):
                 // Left Pickaxe hit ICE surface
                 leftHitPoint = leftPickaxeHitPoint.point;
