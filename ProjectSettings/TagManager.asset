@@ -13,12 +13,12 @@ TagManager:
   - 
   - Water
   - UI
-  - ClimbableLayer
+  - Ice
   - FloorLayer
-  - UnclimbableLayer
-  - Slippery
-  - IgnoreCollisionOnSelf
+  - Rock
   - Snow
+  - IgnoreCollisionOnSelf
+  - 
   - Metal
   - Wood
   - 

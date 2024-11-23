@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
+using static UnityEngine.ParticleSystem;
 
 public class PlayerMovement : MonoBehaviour {
 
@@ -35,6 +35,8 @@ public class PlayerMovement : MonoBehaviour {
     public const float pullUpSpeed = 5f;
     bool leftPickHit = false;
     bool rightPickHit = false;
+    private string leftHitLayerName;
+    private string rightHitLayerName;
 
     // Joints
     private ConfigurableJoint leftCJoint;
@@ -43,20 +45,20 @@ public class PlayerMovement : MonoBehaviour {
     private float swaySpeed = 3f;
     private float maxMomentum = 3f; // Maximum swing momentum
 
-    //Particles
+    // Particles
     [SerializeField] private ParticleSystem iceParticles;
-    [SerializeField] private ParticleSystem SnowParticles;
-    [SerializeField] private ParticleSystem MetalParticles;
-    [SerializeField] private ParticleSystem WoodParticles;
+    [SerializeField] private ParticleSystem snowParticles;
+    [SerializeField] private ParticleSystem metalParticles;
+    [SerializeField] private ParticleSystem woodParticles;
     private ParticleSystem particleInstance;
-    private bool leftIceParticleSpawned = false;
-    private bool rightIceParticleSpawned = false;
+    private bool leftParticleSpawned = false;
+    private bool rightParticleSpawned = false;
 
-    //audio
-    public AudioSource iceHitEffect;
-    public AudioSource snowHitEffect;
-    public AudioSource metalHitEffect;
-    public AudioSource woodHitEffect;
+    // Audio
+    public AudioSource iceHitSound;
+    public AudioSource snowHitSound;
+    public AudioSource metalHitSound;
+    public AudioSource woodHitSound;
 
 
     private void Awake() {
@@ -96,18 +98,6 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, -globalMovement.z));
 
         playerPosition = playerRigidbody.position;
-
-        //// Clamp Left Hand movement
-        //if (playerLeftHand.position.x + leftHandMovement.x > playerPosition.x) {
-        //    leftHandMovement.x = Mathf.Clamp(leftHandMovement.x, float.MinValue, playerPosition.x - playerLeftHand.position.x);
-        //    leftHandMovement.z = 0;
-        //}
-
-        //// Clamp Right Hand movement
-        //if (playerRightHand.position.x + rightHandMovement.x < playerPosition.x) {
-        //    rightHandMovement.x = Mathf.Clamp(rightHandMovement.x, playerPosition.x - playerRightHand.position.x, float.MaxValue);
-        //    rightHandMovement.z = 0;
-        //}
 
         // Update arm target positions
         if (!leftPickHit) {
@@ -161,9 +151,8 @@ public class PlayerMovement : MonoBehaviour {
                 leftCJoint.anchor = leftCJoint.transform.InverseTransformPoint(leftPick.position);
                 leftCJoint.connectedAnchor = leftHit;
 
-                // Set primary and secondary axes for stability and control
+                // Set primary axis for stability and control
                 leftCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                //leftCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 leftCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -175,13 +164,6 @@ public class PlayerMovement : MonoBehaviour {
                 leftCJoint.angularYMotion = ConfigurableJointMotion.Locked;
                 leftCJoint.angularZMotion = ConfigurableJointMotion.Locked;
 
-                // Swing angle limits
-                //SoftJointLimit swingLimit = new SoftJointLimit();
-                //swingLimit.bounciness = 0.3f;
-                //swingLimit.limit = -180f;
-                //leftCJoint.lowAngularXLimit = swingLimit;
-                //swingLimit.limit = 180f;
-                //leftCJoint.highAngularXLimit = swingLimit;
                 leftCJoint.enablePreprocessing = false;
             }
         } else if (rightHit != Vector3.zero) {
@@ -193,9 +175,8 @@ public class PlayerMovement : MonoBehaviour {
                 rightCJoint.anchor = rightCJoint.transform.InverseTransformPoint(rightPick.position);
                 rightCJoint.connectedAnchor = rightHit;
 
-                // Set primary and secondary axes for stability and control
+                // Set primary axis for stability and control
                 rightCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-                //rightCJoint.secondaryAxis = transform.InverseTransformDirection(Vector3.up);
 
                 // Limit unwanted motion to keep player upright
                 rightCJoint.xMotion = ConfigurableJointMotion.Locked;
@@ -207,13 +188,6 @@ public class PlayerMovement : MonoBehaviour {
                 rightCJoint.angularYMotion = ConfigurableJointMotion.Locked;
                 rightCJoint.angularZMotion = ConfigurableJointMotion.Locked;
 
-                // Swing angle limits
-                //SoftJointLimit swingLimit = new SoftJointLimit();
-                //swingLimit.bounciness = 0.3f;
-                //swingLimit.limit = -180f;
-                //rightCJoint.lowAngularXLimit = swingLimit;
-                //swingLimit.limit = 180;
-                //rightCJoint.highAngularXLimit = swingLimit;
                 rightCJoint.enablePreprocessing = false;
             }
         }
@@ -251,86 +225,281 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     private void HandlePickaxeUse() {
+        // Reset hit layers at the start of the function
+        leftHitLayerName = null;
+        rightHitLayerName = null;
         RaycastHit leftPickaxeHitPoint = new RaycastHit();
         RaycastHit rightPickaxeHitPoint = new RaycastHit();
         Vector3 leftHitPoint;
         Vector3 rightHitPoint;
 
-        // Check if both mouse buttons are held down and the pickaxe hits a climbable surface
+        // Check if both mouse buttons are held down and raycast
         leftPickHit = Input.GetMouseButton(0) && Physics.Raycast(leftPick.position, transform.forward, out leftPickaxeHitPoint, rayDistance);
         rightPickHit = Input.GetMouseButton(1) && Physics.Raycast(rightPick.position, transform.forward, out rightPickaxeHitPoint, rayDistance);
 
         DestroyJoints();
+        if (leftPickHit || rightPickHit) {
+            GetHitLayer(
+                leftPickHit ? leftPickaxeHitPoint : default, // Pass the valid left RaycastHit or default if not casted
+                rightPickHit ? rightPickaxeHitPoint : default // Pass the valid right RaycastHit or default if not casted
+            );
+        }
 
-        if (leftPickHit && rightPickHit) {
-            leftHitPoint = leftPickaxeHitPoint.point;
-            rightHitPoint = rightPickaxeHitPoint.point;
-            lastLeftHandPosition = playerLeftHand.position;
-            lastRightHandPosition = playerRightHand.position;
-            Vector3 targetPosition = (leftHitPoint + rightHitPoint) / 2;
-            MovePlayerTowards(targetPosition);
+        var hitCombination = (leftHitLayerName, rightHitLayerName);
+        // Use switch-case to handle different combinations of hit layers
+        switch (hitCombination) {
+            case ("Ice", "Ice"):
+                // Both Pickaxes hit ICE surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                lastRightHandPosition = playerRightHand.position;
+                MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
 
-            // Reset flags since both pickaxes are hitting the wall
-            leftIceParticleSpawned = false;
-            rightIceParticleSpawned = false;
+                // Handle left particles
+                if (!leftParticleSpawned) {
+                    PlayHitSound(iceHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, iceParticles);
+                    leftParticleSpawned = true;
+                }
 
+                // Handle right particles
+                if (!rightParticleSpawned) {
+                    PlayHitSound(iceHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, iceParticles);
+                    rightParticleSpawned = true;
+                }
 
-        } else if (leftPickHit) {
-            leftHitPoint = leftPickaxeHitPoint.point;
-            lastLeftHandPosition = playerLeftHand.position;
-            AttachJoint(leftHitPoint, Vector3.zero);
+                break;
 
-            // Spawn particles only if not already spawned for this hit
-            if (!leftIceParticleSpawned) {
+            case ("Wood", "Wood"):
+                // Both Pickaxes hit WOOD surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                lastRightHandPosition = playerRightHand.position;
+                MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
 
-                hitsound(leftPickaxeHitPoint, leftHitPoint);
-                leftIceParticleSpawned = true;
-            }
+                // Handle left particles
+                if (!leftParticleSpawned) {
+                    PlayHitSound(woodHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, woodParticles);
+                    leftParticleSpawned = true;
+                }
 
-        } else if (rightPickHit) {
-            rightHitPoint = rightPickaxeHitPoint.point;
-            lastRightHandPosition = playerRightHand.position;
-            AttachJoint(Vector3.zero, rightHitPoint);
+                // Handle right particles
+                if (!rightParticleSpawned) {
+                    PlayHitSound(woodHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, woodParticles);
+                    rightParticleSpawned = true;
+                }
 
-            // Spawn particles only if not already spawned for this hit
-            if (!rightIceParticleSpawned) {
+                break;
 
-                hitsound(rightPickaxeHitPoint, rightHitPoint);
-                rightIceParticleSpawned = true;
-            }
-        } else {
-            // Reset particle spawn flags when neither pickaxe is hitting
-            leftIceParticleSpawned = false;
-            rightIceParticleSpawned = false;
+            case ("Ice", null):
+                // Left Pickaxe hit ICE surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!leftParticleSpawned) {
+
+                    PlayHitSound(iceHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, iceParticles);
+                    leftParticleSpawned = true;
+                }
+                rightParticleSpawned = false;
+
+                break;
+
+            case ("Wood", null):
+                // Left Pickaxe hit WOOD surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!leftParticleSpawned) {
+
+                    PlayHitSound(woodHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, woodParticles);
+                    leftParticleSpawned = true;
+                }
+                rightParticleSpawned = false;
+
+                break;
+
+            case ("Snow", null):
+                // Left Pickaxe hit SNOW surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!leftParticleSpawned) {
+
+                    PlayHitSound(snowHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, snowParticles);
+                    leftParticleSpawned = true;
+                }
+                rightParticleSpawned = false;
+
+                break;
+
+            case ("Rock", null):
+                // Left Pickaxe hit ROCK surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+
+                // Spawn particles only if not already spawned for this hit
+                if (!leftParticleSpawned) {
+
+                    PlayHitSound(metalHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, metalParticles);
+                    leftParticleSpawned = true;
+                }
+                rightParticleSpawned = false;
+
+                break;
+
+            case ("Metal", null):
+                // Left Pickaxe hit METAL surface
+                leftHitPoint = leftPickaxeHitPoint.point;
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!leftParticleSpawned) {
+
+                    PlayHitSound(metalHitSound);
+                    spawnParticles(leftHitPoint, Vector3.zero, metalParticles);
+                    leftParticleSpawned = true;
+                }
+                rightParticleSpawned = false;
+
+                break;
+
+            case (null, "Ice"):
+                // Right Pickaxe hit ICE surface
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!rightParticleSpawned) {
+                    PlayHitSound(iceHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, iceParticles);
+                    rightParticleSpawned = true;
+                }
+                leftParticleSpawned = false;
+
+                break;
+
+            case (null, "Wood"):
+                // Right Pickaxe hit WOOD surface
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!rightParticleSpawned) {
+                    PlayHitSound(woodHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, woodParticles);
+                    rightParticleSpawned = true;
+                }
+                leftParticleSpawned = false;
+
+                break;
+
+            case (null, "Snow"):
+                // Right Pickaxe hit SNOW surface
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!rightParticleSpawned) {
+                    PlayHitSound(snowHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, snowParticles);
+                    rightParticleSpawned = true;
+                }
+                leftParticleSpawned = false;
+
+                break;
+
+            case (null, "Rock"):
+                // Right Pickaxe hit ROCK surface
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Spawn particles only if not already spawned for this hit
+                if (!rightParticleSpawned) {
+                    PlayHitSound(metalHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, metalParticles);
+                    rightParticleSpawned = true;
+                }
+                leftParticleSpawned = false;
+
+                break;
+
+            case (null, "Metal"):
+                // Right Pickaxe hit ROCK surface
+                rightHitPoint = rightPickaxeHitPoint.point;
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Spawn particles only if not already spawned for this hit
+                if (!rightParticleSpawned) {
+                    PlayHitSound(metalHitSound);
+                    spawnParticles(Vector3.zero, rightHitPoint, metalParticles);
+                    rightParticleSpawned = true;
+                }
+                leftParticleSpawned = false;
+
+                break;
+
+            case (null, null):
+                // No pickaxe hit anything
+                leftParticleSpawned = false;
+                rightParticleSpawned = false;
+                break;
+
+            default:
+                break;
         }
     }
 
-    private void spawnParticles(Vector3 position, ParticleSystem particleType) {
-        particleInstance = Instantiate(particleType, position, Quaternion.identity);
+    private void GetHitLayer(RaycastHit leftRaycastHit, RaycastHit rightRaycastHit) {
+        // Handle left raycast hit
+        if (leftRaycastHit.collider != null) {
+            int leftLayer = leftRaycastHit.transform.gameObject.layer;
+            leftHitLayerName = LayerMask.LayerToName(leftLayer);
+            Debug.Log($"Left Raycast Hit - Layer: {leftLayer} - Layer Name: {leftHitLayerName}");
+        }
+
+        // Handle right raycast hit
+        if (rightRaycastHit.collider != null) {
+            int rightLayer = rightRaycastHit.transform.gameObject.layer;
+            rightHitLayerName = LayerMask.LayerToName(rightLayer);
+            Debug.Log($"Right Raycast Hit - Layer: {rightLayer} - Layer Name: {rightHitLayerName}");
+        }
     }
 
-    private void hitsound(RaycastHit hitLayer, Vector3 position) {
-        int Layer = hitLayer.transform.gameObject.layer;
-        string layerName = LayerMask.LayerToName(Layer);
-        Debug.Log($"Hit Layer: {Layer} - Layer Name: {layerName}");
+    private void spawnParticles(Vector3 leftPosition, Vector3 rightPosition, ParticleSystem particleType) {
+        // Check and spawn particles at the left position if it's valid
+        if (leftPosition != Vector3.zero) {
+            Instantiate(particleType, leftPosition, Quaternion.identity);
+            Debug.Log($"Particles spawned at left position: {leftPosition}");
+        }
 
-        if (Layer == 6) {
-            spawnParticles(position, iceParticles);
-            iceHitEffect.Play();
-        } else if (Layer == 9) {
-            spawnParticles(position, SnowParticles);
-            snowHitEffect.Play();
+        // Check and spawn particles at the right position if it's valid
+        if (rightPosition != Vector3.zero) {
+            Instantiate(particleType, rightPosition, Quaternion.identity);
+            Debug.Log($"Particles spawned at right position: {rightPosition}");
         }
-        else if (Layer == 12)
-        {
-            spawnParticles(position, MetalParticles);
-            metalHitEffect.Play();
-        }
-        else if (Layer == 13)
-        {
-            spawnParticles(position, WoodParticles);
-            woodHitEffect.Play();
-        }
+    }
+
+    private void PlayHitSound(AudioSource soundEffect) {
+        soundEffect.Play();
     }
 
     private void MovePlayerTowards(Vector3 targetPosition) {
