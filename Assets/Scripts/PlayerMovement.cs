@@ -304,6 +304,34 @@ public class PlayerMovement : MonoBehaviour {
 
                 break;
 
+            case ("Snow", "Rock"):
+                // Right Pickaxe on Ice, Left Pickaxe on Rock
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                lastLeftHandPosition = playerLeftHand.position;
+                AttachJoint(leftHitPoint, Vector3.zero);
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, snowParticles, snowHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
+
+                break;
+
+            case ("Rock", "Snow"):
+                // Right Pickaxe on Ice, Left Pickaxe on Rock
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                lastRightHandPosition = playerRightHand.position;
+                AttachJoint(Vector3.zero, rightHitPoint);
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref rightParticleSpawned, snowParticles, snowHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
+
+                break;
+
             case ("Rock", "Rock"):
                 // Both Pickaxes hit Rock
                 leftHitPoint = leftPickaxeHitPoint.point;
