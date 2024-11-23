@@ -488,13 +488,11 @@ public class PlayerMovement : MonoBehaviour {
         // Check and spawn particles at the left position if it's valid
         if (leftPosition != Vector3.zero) {
             Instantiate(particleType, leftPosition, Quaternion.identity);
-            Debug.Log($"Particles spawned at left position: {leftPosition}");
         }
 
         // Check and spawn particles at the right position if it's valid
         if (rightPosition != Vector3.zero) {
             Instantiate(particleType, rightPosition, Quaternion.identity);
-            Debug.Log($"Particles spawned at right position: {rightPosition}");
         }
     }
 
