@@ -2,70 +2,68 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using TMPro;
+using UnityEngine;
 using Unity.Mathematics;
 using Unity.VisualScripting;
-using UnityEngine;
 using static UnityEngine.ParticleSystem;
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour {
 
-    // Arm Movement
-    InputHandler inputHandler;
-    Rigidbody playerRigidbody;
-    public const float movementSpeed = 3f;
-    public const float lerpSpeed = 1f;
-    public Transform playerLeftHand;
-    public Transform playerRightHand;
-    public Transform playerLeftArmTarget;
-    public Transform playerRightArmTarget;
-    private Vector3 lastLeftHandPosition;
-    private Vector3 lastRightHandPosition;
-    public Transform playerLeftShoulder;
-    public Transform playerRightShoulder;
-    private float leftShoulderToHandLength;
-    private float rightShoulderToHandLength;
+    // Constants
+    private const float movementSpeed = 3f; // Arm movement speed
+    private const float lerpSpeed = 1f;     // Smoothing for player pull up
+    private const float pullUpSpeed = 5f;   // How fast the player pulls up with both pickaxes hit
+    private const float swaySpeed = 3f;     // How much the player sways by larger value faster
+    private const float maxMomentum = 3f;   // Maximum swinging momentum
 
-    // Pickaxe use
-    private float rayDistance = 50f;
-    public Transform leftPick;
-    public Transform rightPick;
-    public const float pullUpSpeed = 5f;
-    bool leftPickHit = false;
-    bool rightPickHit = false;
-    private string leftHitLayerName;
-    private string rightHitLayerName;
-
-    // Joints
-    private ConfigurableJoint leftCJoint;
-    private ConfigurableJoint rightCJoint;
-    private bool isSwinging = false;
-    private float swaySpeed = 3f;
-    private float maxMomentum = 3f; // Maximum swing momentum
-
-    // Sliding
-    private bool isSlidingDownOnSnow = false; // Track if the player is sliding down
-    private float slidingDuration = 0.5f; // The time (in seconds) before relocking the Y-axis
-    private float slidingTimer = 0f; // Timer to track how long the player has been sliding
-    private bool isSlidingTimerActive = false; // To track if the sliding timer is active
-
-
-    // Particles
+    // Serialized Fields (Particles and Audio)
+    [Header("Particles")]
     [SerializeField] private ParticleSystem iceParticles;
     [SerializeField] private ParticleSystem snowParticles;
     [SerializeField] private ParticleSystem metalParticles;
     [SerializeField] private ParticleSystem rockParticles;
     [SerializeField] private ParticleSystem woodParticles;
-    private ParticleSystem particleInstance;
-    private bool leftParticleSpawned = false;
-    private bool rightParticleSpawned = false;
-
-    // Audio
+    [Header("Audio")]
     public AudioSource iceHitSound;
     public AudioSource snowHitSound;
     public AudioSource metalHitSound;
     public AudioSource woodHitSound;
     public AudioSource rockHitSound;
+
+    // Private Fields
+    InputHandler inputHandler;
+    Rigidbody playerRigidbody;
+    private ParticleSystem particleInstance;
+    private ConfigurableJoint leftCJoint;
+    private ConfigurableJoint rightCJoint;
+    private float rayDistance = 50f;           // Length of Ray
+    bool leftPickHit = false;                  // Track if left mouse button down and raycast is hitting
+    bool rightPickHit = false;                 // Track if right mouse button down and raycast is hitting
+    private string leftHitLayerName;           // Current layer player is anchord to
+    private string rightHitLayerName;          // Current layer player is anchord to
+    private bool isSwinging = false;           // Track if the player is currently swinging (anchored)
+    private bool isSlidingDownOnSnow = false;  // Track if the player is sliding down
+    private float slidingDuration = 0.5f;      // The time (in seconds) before relocking the Y-axis
+    private float slidingTimer = 0f;           // Timer to track how long the player has been sliding
+    private bool isSlidingTimerActive = false; // To track if the sliding timer is active
+    private bool leftParticleSpawned = false;  // Track if leftPickaxe particle is spawned
+    private bool rightParticleSpawned = false; // Track if rightPickaxe particle is spawned
+    private float leftShoulderToHandLength;    // Length of left shoulder to hand
+    private float rightShoulderToHandLength;   // Length of right shoulder to hand
+    private Vector3 lastLeftHandPosition;      // Last recorded position of the left hand
+    private Vector3 lastRightHandPosition;     // Last recorded position of the right hand
+
+    // Public Fields
+    [Header("Arm Movement Settings")]
+    public Transform playerLeftHand;       // Transform for the player's left hand
+    public Transform playerRightHand;      // Transform for the player's right hand
+    public Transform playerLeftArmTarget;  // Target position for the player's left arm
+    public Transform playerRightArmTarget; // Target position for the player's right arm
+    public Transform playerLeftShoulder;   // Transform for the player's left shoulder
+    public Transform playerRightShoulder;  // Transform for the player's right shoulder
+    public Transform leftPick;             // Hit point on the tip of the pickaxe
+    public Transform rightPick;            // Hit point on the tip of the pickaxe
 
 
     private void Awake() {
