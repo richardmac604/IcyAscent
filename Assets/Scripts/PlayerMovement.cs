@@ -142,59 +142,41 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
+    private ConfigurableJoint SetupJoint(Vector3 anchorPosition, Vector3 connectedPosition) {
+        ConfigurableJoint joint = transform.gameObject.AddComponent<ConfigurableJoint>();
+        joint.anchor = joint.transform.InverseTransformPoint(anchorPosition);
+        joint.connectedAnchor = connectedPosition;
+
+        // Set primary axis and restrict motions
+        joint.axis = transform.InverseTransformDirection(Vector3.forward);
+        joint.xMotion = ConfigurableJointMotion.Locked;
+        joint.yMotion = ConfigurableJointMotion.Locked;
+        joint.zMotion = ConfigurableJointMotion.Locked;
+        joint.angularXMotion = ConfigurableJointMotion.Free;
+        joint.angularYMotion = ConfigurableJointMotion.Locked;
+        joint.angularZMotion = ConfigurableJointMotion.Locked;
+        joint.enablePreprocessing = false;
+
+        return joint;
+    }
+
+
     private void CreateJoints(Vector3 leftHit, Vector3 rightHit) {
 
         if (leftHit != Vector3.zero) {
             // Left pickaxe hit the wall
             if (leftCJoint == null) {
-                leftCJoint = transform.gameObject.AddComponent<ConfigurableJoint>();
-
-                leftCJoint.anchor = leftCJoint.transform.InverseTransformPoint(leftPick.position);
-                leftCJoint.connectedAnchor = leftHit;
-
-                // Set primary axis for stability and control
-                leftCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-
-                // Limit unwanted motion to keep player upright
-                leftCJoint.xMotion = ConfigurableJointMotion.Locked;
-                leftCJoint.yMotion = ConfigurableJointMotion.Locked;
-                leftCJoint.zMotion = ConfigurableJointMotion.Locked;
-
-                // Only allow free rotation on x axis
-                leftCJoint.angularXMotion = ConfigurableJointMotion.Free;
-                leftCJoint.angularYMotion = ConfigurableJointMotion.Locked;
-                leftCJoint.angularZMotion = ConfigurableJointMotion.Locked;
-
-                leftCJoint.enablePreprocessing = false;
+                leftCJoint = SetupJoint(leftPick.position, leftHit);
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
             if (rightCJoint == null) {
-
-                rightCJoint = transform.gameObject.AddComponent<ConfigurableJoint>();
-
-                rightCJoint.anchor = rightCJoint.transform.InverseTransformPoint(rightPick.position);
-                rightCJoint.connectedAnchor = rightHit;
-
-                // Set primary axis for stability and control
-                rightCJoint.axis = transform.InverseTransformDirection(Vector3.forward);
-
-                // Limit unwanted motion to keep player upright
-                rightCJoint.xMotion = ConfigurableJointMotion.Locked;
-                rightCJoint.yMotion = ConfigurableJointMotion.Locked;
-                rightCJoint.zMotion = ConfigurableJointMotion.Locked;
-
-                // Only allow free rotation on x axis
-                rightCJoint.angularXMotion = ConfigurableJointMotion.Free;
-                rightCJoint.angularYMotion = ConfigurableJointMotion.Locked;
-                rightCJoint.angularZMotion = ConfigurableJointMotion.Locked;
-
-                rightCJoint.enablePreprocessing = false;
+                rightCJoint = SetupJoint(rightPick.position, rightHit);
             }
         }
     }
 
-    private void AttachJoint(Vector3 leftHit, Vector3 rightHit) {
+    private void HandleSwingingJoint(Vector3 leftHit, Vector3 rightHit) {
 
         CreateJoints(leftHit, rightHit);
 
@@ -488,12 +470,12 @@ public class PlayerMovement : MonoBehaviour {
             // Update last hand position for the left hand
             lastLeftHandPosition = playerLeftHand.position;
             // Attach joint only for the left pickaxe
-            AttachJoint(leftHitPoint, Vector3.zero);
+            HandleSwingingJoint(leftHitPoint, Vector3.zero);
         } else {
             // Update last hand position for the right hand
             lastRightHandPosition = playerRightHand.position;
             // Attach joint only for the right pickaxe
-            AttachJoint(Vector3.zero, rightHitPoint);
+            HandleSwingingJoint(Vector3.zero, rightHitPoint);
         }
     }
 
