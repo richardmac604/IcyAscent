@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.ParticleSystem;
 
@@ -25,8 +26,6 @@ public class PlayerMovement : MonoBehaviour {
     private float leftShoulderToHandLength;
     private float rightShoulderToHandLength;
 
-    private Vector3 playerPosition;
-
     // Pickaxe use
     private float rayDistance = 50f;
     public Transform leftPick;
@@ -43,6 +42,13 @@ public class PlayerMovement : MonoBehaviour {
     private bool isSwinging = false;
     private float swaySpeed = 3f;
     private float maxMomentum = 3f; // Maximum swing momentum
+
+    // Sliding
+    private bool isSlidingDownOnSnow = false; // Track if the player is sliding down
+    private float slidingDuration = 0.5f; // The time (in seconds) before relocking the Y-axis
+    private float slidingTimer = 0f; // Timer to track how long the player has been sliding
+    private bool isSlidingTimerActive = false; // To track if the sliding timer is active
+
 
     // Particles
     [SerializeField] private ParticleSystem iceParticles;
@@ -71,6 +77,7 @@ public class PlayerMovement : MonoBehaviour {
 
         leftShoulderToHandLength = Vector3.Distance(playerLeftHand.position, playerLeftShoulder.position);
         rightShoulderToHandLength = Vector3.Distance(playerRightHand.position, playerRightShoulder.position);
+
     }
 
     private void Start() {
@@ -78,6 +85,10 @@ public class PlayerMovement : MonoBehaviour {
         Cursor.lockState = CursorLockMode.Locked;
     }
 
+    private void Update() {
+        HandleSlidingTime();
+        HandleSlidingAnchorPosition();
+    }
 
     public void HandleAllMovement() {
         HandleArmMovement();
@@ -97,8 +108,6 @@ public class PlayerMovement : MonoBehaviour {
 
         // Switch the localspace movement of rightHand to world space with flipped movements
         Vector3 rightHandMovement = playerRightHand.TransformDirection(new Vector3(globalMovement.x, globalMovement.y, -globalMovement.z));
-
-        playerPosition = playerRigidbody.position;
 
         // Update arm target positions
         if (!leftPickHit) {
@@ -126,6 +135,28 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
+    private void HandleSlidingTime() {
+        // Handle sliding timer
+        if (isSlidingTimerActive) {
+            slidingTimer += Time.deltaTime;
+            if (slidingTimer >= slidingDuration) {
+                RelockYMotion();
+                isSlidingTimerActive = false;
+            }
+        }
+    }
+
+    private void HandleSlidingAnchorPosition() {
+        if (isSlidingDownOnSnow) {
+            if (leftCJoint != null) {
+                UpdateConnectedAnchorPosition(leftCJoint, leftPick);
+            }
+            if (rightCJoint != null) {
+                UpdateConnectedAnchorPosition(rightCJoint, rightPick);
+            }
+        }
+    }
+
     private void DestroyJoints() {
         if (rightPickHit && leftPickHit) {
             Destroy(rightCJoint);
@@ -140,6 +171,41 @@ public class PlayerMovement : MonoBehaviour {
             Destroy(rightCJoint);
             isSwinging = false;
         }
+    }
+
+    private void UpdateConnectedAnchorPosition(ConfigurableJoint joint, Transform pickaxe) {
+        if (joint != null) {
+            // Update the connected anchor to follow the pickaxe's current position
+            joint.connectedAnchor = joint.transform.InverseTransformPoint(pickaxe.position);
+        }
+    }
+
+    private void RelockYMotion() {
+        if (leftCJoint != null) {
+            leftCJoint.yMotion = ConfigurableJointMotion.Locked;
+        }
+
+        if (rightCJoint != null) {
+            rightCJoint.yMotion = ConfigurableJointMotion.Locked;
+        }
+
+        // Reset the sliding state
+        isSlidingDownOnSnow = false;
+    }
+
+    private void EnableSlidingOnSnow(ConfigurableJoint joint) {
+        // Allow limited movement along the Y-axis to simulate sliding down
+        joint.yMotion = ConfigurableJointMotion.Limited;
+
+        // Start the sliding timer
+        slidingTimer = 0f;
+        isSlidingTimerActive = true;
+
+        // Configure the joint limit for sliding
+        SoftJointLimit yLimit = new SoftJointLimit {
+            limit = 2f  // Adjust this to control the amount of allowed sliding
+        };
+        joint.linearLimit = yLimit;
     }
 
     private ConfigurableJoint SetupJoint(Vector3 anchorPosition, Vector3 connectedPosition) {
@@ -160,21 +226,35 @@ public class PlayerMovement : MonoBehaviour {
         return joint;
     }
 
-
     private void CreateJoints(Vector3 leftHit, Vector3 rightHit) {
 
         if (leftHit != Vector3.zero) {
             // Left pickaxe hit the wall
             if (leftCJoint == null) {
                 leftCJoint = SetupJoint(leftPick.position, leftHit);
+                // Check if the player is hitting snow and apply sliding effect
+                if (leftHitLayerName == "Snow") {
+                    isSlidingDownOnSnow = true;
+                    EnableSlidingOnSnow(leftCJoint);
+                } else {
+                    isSlidingDownOnSnow = false;
+                }
             }
         } else if (rightHit != Vector3.zero) {
             // Right pickaxe hit the wall
             if (rightCJoint == null) {
                 rightCJoint = SetupJoint(rightPick.position, rightHit);
+                // Check if the player is hitting snow and apply sliding effect
+                if (rightHitLayerName == "Snow") {
+                    isSlidingDownOnSnow = true;
+                    EnableSlidingOnSnow(rightCJoint);
+                } else {
+                    isSlidingDownOnSnow = false;
+                }
             }
         }
     }
+
 
     private void HandleSwingingJoint(Vector3 leftHit, Vector3 rightHit) {
 
@@ -479,20 +559,17 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
-
     private void GetHitLayer(RaycastHit leftRaycastHit, RaycastHit rightRaycastHit) {
         // Handle left raycast hit
         if (leftRaycastHit.collider != null) {
             int leftLayer = leftRaycastHit.transform.gameObject.layer;
             leftHitLayerName = LayerMask.LayerToName(leftLayer);
-            Debug.Log($"Left Raycast Hit - Layer: {leftLayer} - Layer Name: {leftHitLayerName}");
         }
 
         // Handle right raycast hit
         if (rightRaycastHit.collider != null) {
             int rightLayer = rightRaycastHit.transform.gameObject.layer;
             rightHitLayerName = LayerMask.LayerToName(rightLayer);
-            Debug.Log($"Right Raycast Hit - Layer: {rightLayer} - Layer Name: {rightHitLayerName}");
         }
     }
 
@@ -519,8 +596,6 @@ public class PlayerMovement : MonoBehaviour {
             particleSpawnedFlag = true;
         }
     }
-
-
     private void MovePlayerTowards(Vector3 targetPosition) {
         isSwinging = false;
         // Calculate the direction to the target position (pickaxe hit point)
@@ -568,5 +643,4 @@ public class PlayerMovement : MonoBehaviour {
             playerRightArmTarget.position = lastRightHandPosition;
         }
     }
-
 }
