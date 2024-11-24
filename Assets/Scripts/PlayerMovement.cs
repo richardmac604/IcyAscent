@@ -29,7 +29,6 @@ public class PlayerMovement : MonoBehaviour {
 
     // Pickaxe use
     private float rayDistance = 50f;
-    public LayerMask layermask;
     public Transform leftPick;
     public Transform rightPick;
     public const float pullUpSpeed = 5f;
@@ -49,6 +48,7 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] private ParticleSystem iceParticles;
     [SerializeField] private ParticleSystem snowParticles;
     [SerializeField] private ParticleSystem metalParticles;
+    [SerializeField] private ParticleSystem rockParticles;
     [SerializeField] private ParticleSystem woodParticles;
     private ParticleSystem particleInstance;
     private bool leftParticleSpawned = false;
@@ -59,6 +59,7 @@ public class PlayerMovement : MonoBehaviour {
     public AudioSource snowHitSound;
     public AudioSource metalHitSound;
     public AudioSource woodHitSound;
+    public AudioSource rockHitSound;
 
 
     private void Awake() {
@@ -246,217 +247,194 @@ public class PlayerMovement : MonoBehaviour {
         }
 
         var hitCombination = (leftHitLayerName, rightHitLayerName);
-        // Use switch-case to handle different combinations of hit layers
+        // switch case to handle different combinations of hit layers
         switch (hitCombination) {
             case ("Ice", "Ice"):
                 // Both Pickaxes hit ICE surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                lastRightHandPosition = playerRightHand.position;
-                MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
-
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
-
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, iceParticles, iceHitSound);
                 break;
 
-            case ("Wood", "Wood"):
-                // Both Pickaxes hit WOOD surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                lastRightHandPosition = playerRightHand.position;
-                MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
-
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, woodParticles, woodHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, woodParticles, woodHitSound);
-
+            case ("Ice", "Snow"):
+                // Left Pickaxe hit ICE, right hit SNOW
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, snowParticles, snowHitSound);
                 break;
 
             case ("Ice", "Rock"):
-                // Left Pickaxe on Ice, Right Pickaxe on Rock
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
-
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
-
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
-
+                // Left Pickaxe hit ICE, right hit ROCK
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, rockParticles, rockHitSound, true);
                 break;
 
-            case ("Rock", "Ice"):
-                // Right Pickaxe on Ice, Left Pickaxe on Rock
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
+            case ("Ice", "Metal"):
+                // Left Pickaxe hit ICE, right hit METAL
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, metalParticles, metalHitSound);
+                break;
 
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
+            case ("Ice", "Wood"):
+                // Left Pickaxe hit ICE, right hit WOOD
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, woodParticles, woodHitSound);
+                break;
 
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
+            case ("Snow", "Ice"):
+                // Left Pickaxe hit SNOW, right hit ICE
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, iceParticles, iceHitSound);
+                break;
 
+            case ("Snow", "Snow"):
+                // Both Pickaxes hit SNOW surface
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, snowParticles, snowHitSound);
                 break;
 
             case ("Snow", "Rock"):
-                // Right Pickaxe on Ice, Left Pickaxe on Rock
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
+                // Left Pickaxe hit SNOW, right hit ROCK
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, rockParticles, rockHitSound, true);
+                break;
 
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
+            case ("Snow", "Metal"):
+                // Left Pickaxe hit SNOW, right hit METAL
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, metalParticles, metalHitSound);
+                break;
 
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, snowParticles, snowHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
+            case ("Snow", "Wood"):
+                // Left Pickaxe hit SNOW, right hit WOOD
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, woodParticles, woodHitSound);
+                break;
 
+            case ("Rock", "Ice"):
+                // Left Pickaxe hit ROCK, right hit ICE
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, rockHitSound, iceParticles, iceHitSound, false);
                 break;
 
             case ("Rock", "Snow"):
-                // Right Pickaxe on Ice, Left Pickaxe on Rock
-                leftHitPoint = leftPickaxeHitPoint.point;
-                rightHitPoint = rightPickaxeHitPoint.point;
+                // Left Pickaxe hit ROCK, right hit SNOW
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, rockHitSound, snowParticles, snowHitSound, false);
+                break;
 
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
-
-                // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref rightParticleSpawned, snowParticles, snowHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
-
+            case ("Rock", "Metal"):
+                // Left Pickaxe hit ROCK, right hit METAL
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, rockHitSound, metalParticles, metalHitSound, false);
                 break;
 
             case ("Rock", "Rock"):
-                // Both Pickaxes hit Rock
+                // Both Pickaxes hit ROCK
                 leftHitPoint = leftPickaxeHitPoint.point;
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
-
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, rockHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, rockHitSound);
                 break;
 
+            case ("Rock", "Wood"):
+                // Left Pickaxe hit ROCK, right hit WOOD
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, rockHitSound, woodParticles, woodHitSound, false);
+                break;
+
+            case ("Metal", "Ice"):
+                // Left Pickaxe hit METAL, right hit ICE
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, iceParticles, iceHitSound);
+                break;
+
+            case ("Metal", "Snow"):
+                // Left Pickaxe hit METAL, right hit SNOW
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, snowParticles, snowHitSound);
+                break;
+
+            case ("Metal", "Rock"):
+                // Left Pickaxe hit METAL, right hit ROCK
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, rockParticles, rockHitSound, true);
+                break;
+
+            case ("Metal", "Metal"):
+                // Both Pickaxes hit METAL
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, metalParticles, metalHitSound);
+                break;
+
+            case ("Metal", "Wood"):
+                // Left Pickaxe hit METAL, right hit WOOD
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, woodParticles, woodHitSound);
+                break;
+
+            case ("Wood", "Metal"):
+                // Left Pickaxe hit WOOD, right hit METAL
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, metalParticles, metalHitSound);
+                break;
+
+            case ("Wood", "Ice"):
+                // Left Pickaxe hit WOOD, right hit ICE
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, iceParticles, iceHitSound);
+                break;
+
+            case ("Wood", "Snow"):
+                // Left Pickaxe hit WOOD, right hit SNOW
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, snowParticles, snowHitSound);
+                break;
+
+            case ("Wood", "Rock"):
+                // Left Pickaxe hit WOOD, right hit ROCK
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, rockParticles, rockHitSound, true);
+                break;
+
+            case ("Wood", "Wood"):
+                // Both Pickaxes hit WOOD
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, woodParticles, woodHitSound);
+                break;
+
+            // LEFT pickaxe hit cases
             case ("Ice", null):
-                // Left Pickaxe hit ICE surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
-
-                // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, iceParticles, iceHitSound);
-                rightParticleSpawned = false;
-
-                break;
-
-            case ("Wood", null):
-                // Left Pickaxe hit WOOD surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
-
-                // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, woodParticles, woodHitSound);
-                rightParticleSpawned = false;
-
+                // Left Pickaxe hit ICE
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, null, null, true);
                 break;
 
             case ("Snow", null):
-                // Left Pickaxe hit SNOW surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
-
-                // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, snowParticles, snowHitSound);
-                rightParticleSpawned = false;
-
+                // Left Pickaxe hit SNOW
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, null, null, true);
                 break;
 
             case ("Rock", null):
-                // Left Pickaxe hit ROCK surface
+                // Left Pickaxe hit ROCK
                 leftHitPoint = leftPickaxeHitPoint.point;
 
                 // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
-                rightParticleSpawned = false;
-
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, rockHitSound);
                 break;
 
             case ("Metal", null):
-                // Left Pickaxe hit METAL surface
-                leftHitPoint = leftPickaxeHitPoint.point;
-                lastLeftHandPosition = playerLeftHand.position;
-                AttachJoint(leftHitPoint, Vector3.zero);
-
-                // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
-                rightParticleSpawned = false;
-
+                // Left Pickaxe hit METAL
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, null, null, true);
                 break;
 
+            case ("Wood", null):
+                // Left Pickaxe hit WOOD
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, woodHitSound, null, null, true);
+                break;
+
+            // RIGHT pickaxe hit cases
             case (null, "Ice"):
-                // Right Pickaxe hit ICE surface
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
-
-                // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, iceParticles, iceHitSound);
-                leftParticleSpawned = false;
-
-                break;
-
-            case (null, "Wood"):
-                // Right Pickaxe hit WOOD surface
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
-
-                // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, woodParticles, woodHitSound);
-                leftParticleSpawned = false;
-
+                // Right Pickaxe hit ICE
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, null, iceParticles, iceHitSound, false);
                 break;
 
             case (null, "Snow"):
-                // Right Pickaxe hit SNOW surface
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
-
-                // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, snowParticles, snowHitSound);
-                leftParticleSpawned = false;
-
+                // Right Pickaxe hit SNOW
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, null, snowParticles, snowHitSound, false);
                 break;
 
             case (null, "Rock"):
-                // Right Pickaxe hit ROCK surface
+                // Right Pickaxe hit ROCK
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
-                leftParticleSpawned = false;
-
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, rockHitSound);
                 break;
 
             case (null, "Metal"):
-                // Right Pickaxe hit ROCK surface
-                rightHitPoint = rightPickaxeHitPoint.point;
-                lastRightHandPosition = playerRightHand.position;
-                AttachJoint(Vector3.zero, rightHitPoint);
+                // Right Pickaxe hit METAL
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, null, metalParticles, metalHitSound, false);
+                break;
 
-                // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
-                leftParticleSpawned = false;
-
+            case (null, "Wood"):
+                // Right Pickaxe hit WOOD
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, null, woodParticles, woodHitSound, false);
                 break;
 
             case (null, null):
@@ -466,9 +444,59 @@ public class PlayerMovement : MonoBehaviour {
                 break;
 
             default:
+                // No pickaxe hit anything or invalid combination
                 break;
         }
     }
+
+    private void HandleBothPickaxesHitSameSurface(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleSystem leftParticles, AudioSource leftSound, ParticleSystem rightParticles, AudioSource rightSound) {
+        // Get hit points
+        Vector3 leftHitPoint = leftPickaxeHitPoint.point;
+        Vector3 rightHitPoint = rightPickaxeHitPoint.point;
+
+        // Update player hand positions
+        lastLeftHandPosition = playerLeftHand.position;
+        lastRightHandPosition = playerRightHand.position;
+
+        // Handle particles and sound
+        HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, leftParticles, leftSound);
+        HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rightParticles, rightSound);
+
+        // Move player towards the midpoint of the hit points
+        MovePlayerTowards((leftHitPoint + rightHitPoint) / 2);
+
+    }
+
+    private void HandleMixedPickaxesHits(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleSystem leftParticles, AudioSource leftSound, ParticleSystem rightParticles, AudioSource rightSound, bool isLeft) {
+        // Get hit points
+        Vector3 leftHitPoint = leftPickaxeHitPoint.point;
+        Vector3 rightHitPoint = rightPickaxeHitPoint.point;
+
+        // Handle particles and sound
+        if (leftParticles != null) { 
+            HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, leftParticles, leftSound);
+        } else {
+            leftParticleSpawned = false;
+        }
+        if (rightParticles != null) { 
+            HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rightParticles, rightSound);
+        } else {
+            rightParticleSpawned = false;
+        }
+
+        if (isLeft) {
+            // Update last hand position for the left hand
+            lastLeftHandPosition = playerLeftHand.position;
+            // Attach joint only for the left pickaxe
+            AttachJoint(leftHitPoint, Vector3.zero);
+        } else {
+            // Update last hand position for the right hand
+            lastRightHandPosition = playerRightHand.position;
+            // Attach joint only for the right pickaxe
+            AttachJoint(Vector3.zero, rightHitPoint);
+        }
+    }
+
 
     private void GetHitLayer(RaycastHit leftRaycastHit, RaycastHit rightRaycastHit) {
         // Handle left raycast hit
