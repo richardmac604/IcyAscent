@@ -24261,8 +24261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 377a79b4898e9e84981f09c61f04fa83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentEle: {fileID: 118582177}
-  scoreText: {fileID: 707799743}
+  timerText: {fileID: 707799743}
 --- !u!4 &794260596
 Transform:
   m_ObjectHideFlags: 0

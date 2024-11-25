@@ -3,31 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class ScoreManager : MonoBehaviour {
-    public Transform currentEle;
-    public TextMeshProUGUI scoreText;
-    private float highestEle;
-    
+public class TimerManager : MonoBehaviour
+{
+    public TextMeshProUGUI timerText; // Reference to display the timer
+    private float elapsedTime = 0f;   // Tracks the elapsed time
+    private bool isTiming = false;   // Tracks whether the timer is running
+
     // Start is called before the first frame update
     void Start()
     {
-        highestEle = 0f;
-        scoreText.text = "Best Height: " + highestEle;
+        timerText.text = "Time: 0.000"; // Initialize the timer display
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(currentEle.position.y > highestEle)
+        // Start the timer on left mouse click
+        if (Input.GetMouseButtonDown(0) && !isTiming)
         {
-            highestEle = currentEle.position.y;
-            UpdateScore();
+            isTiming = true; // Start timing
+        }
+
+        // Update the timer if it's running
+        if (isTiming)
+        {
+            elapsedTime += Time.deltaTime; // Increment the elapsed time
+            UpdateTimerDisplay();         // Update the timer display
         }
     }
 
-    void UpdateScore()
+    // Updates the timer display in the UI
+    void UpdateTimerDisplay()
     {
-        int score = Mathf.FloorToInt(highestEle);
-        scoreText.text = "Best Height: " + score;
+        timerText.text = "Time: " + elapsedTime.ToString("F3");
     }
 }
