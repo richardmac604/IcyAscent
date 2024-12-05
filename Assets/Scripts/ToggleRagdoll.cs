@@ -5,6 +5,7 @@ public class ToggleRagdoll : MonoBehaviour
     [SerializeField] private Transform playerRoot;
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;
+    private bool isRagdollEnabled = false;
 
     void Start()
     {
