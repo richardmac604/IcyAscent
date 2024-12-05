@@ -5,13 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class SettingsManager : MonoBehaviour
 {
-    public GameObject audioObj;
+    private float volume = 1f;
     private bool isPaused = false;
-
-    private void Start()
-    {
-        audioObj = GameObject.Find("Music");
-    }
 
     void Update()
     {
@@ -19,21 +14,16 @@ public class SettingsManager : MonoBehaviour
         {
             isPaused = togglePause();
         }
-        
+
         if (Input.GetKeyDown("q"))
         {
             quitGame();
         }
-        
+
         if (Input.GetKey("r"))
         {
             restartGame();
             togglePause();
-        }
-
-        if (Input.GetKeyDown("m"))
-        {
-            MuteMusic();
         }
     }
 
@@ -52,31 +42,41 @@ public class SettingsManager : MonoBehaviour
             );
 
             GUI.Label(
-                new Rect(Screen.width / 2 - 90, Screen.height / 2 - 25, 180, 35),
+                new Rect(Screen.width / 2 - 90, Screen.height / 2 - 25, 160, 90),
                "Quit Game - Q"
             );
 
             GUI.Label(
-                new Rect(Screen.width / 2 - 90, Screen.height / 2 - 5, 180, 35),
-               "Return to Main Menu - R"
+                new Rect(Screen.width / 2 - 90, Screen.height / 2 - 5, 140, 70),
+               "Main Menu - R"
             );
 
-            GUI.Label(
-                new Rect(Screen.width / 2 - 90, Screen.height / 2 + 15, 180, 35),
-                "Mute BG Music - M"
-            );
+
+            GUI.Label(new Rect(Screen.width / 2 - 90, Screen.height / 2 + 20, 120, 50),
+                "Volume Control"
+                );
+
+            volume = GUI.Slider(new Rect(Screen.width / 2 + 7,
+                Screen.height / 2 + 25, 60, 25), volume, 0, 0, 1,
+                GUI.skin.horizontalSlider, GUI.skin.horizontalSliderThumb, 
+                true, 0, GUI.skin.horizontalSlider
+                );
+             AudioListener.volume = volume;
         }
     }
 
 
     bool togglePause()
     {
-        if (Time.timeScale == 0f) {
+        if (Time.timeScale == 0f)
+        {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
             Time.timeScale = 1.0f;
             return (false);
-        } else {
+        }
+        else
+        {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
             Time.timeScale = 0f;
@@ -93,19 +93,5 @@ public class SettingsManager : MonoBehaviour
     void restartGame()
     {
         SceneManager.LoadScene("MainMenu");
-    }
-
-    void MuteMusic()
-    {
-        AudioSource audioSource = audioObj.GetComponent<AudioSource>();
-        if (audioSource.isPlaying == true)
-        {
-            audioSource.Pause();
-        } else
-        {
-            audioSource.Play();
-        }
-        
-        
     }
 }
