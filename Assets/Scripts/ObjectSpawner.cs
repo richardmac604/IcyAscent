@@ -12,6 +12,9 @@ public class ObjectSpawner : MonoBehaviour
 
     public Canvas uiCanvas;                      // Canvas for the UI indicators
     public RectTransform indicatorPrefab;        // UI indicator prefab (arrow + exclamation mark)
+    public Transform player;                     // Reference to the player
+    public float spawnDistance = 10.0f;          // Distance within which objects spawn
+
     private Camera mainCamera;
 
     private void Start()
@@ -24,7 +27,11 @@ public class ObjectSpawner : MonoBehaviour
     {
         while (true)
         {
-            StartCoroutine(SpawnWithWarning());
+            // Check if the spawner is within the spawn distance of the player
+            if (Vector3.Distance(transform.position, player.position) <= spawnDistance)
+            {
+                StartCoroutine(SpawnWithWarning());
+            }
             yield return new WaitForSeconds(spawnRate);
         }
     }
