@@ -326,7 +326,7 @@ public class PlayerMovement : MonoBehaviour {
 
             case ("Ice", "Metal"):
                 // Left Pickaxe hit ICE, right hit METAL
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, metalParticles, metalHitSound);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, iceHitSound, metalParticles, metalHitSound, true);
                 break;
 
             case ("Ice", "Wood"):
@@ -351,7 +351,7 @@ public class PlayerMovement : MonoBehaviour {
 
             case ("Snow", "Metal"):
                 // Left Pickaxe hit SNOW, right hit METAL
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, metalParticles, metalHitSound);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, snowHitSound, metalParticles, metalHitSound, true);
                 break;
 
             case ("Snow", "Wood"):
@@ -371,7 +371,12 @@ public class PlayerMovement : MonoBehaviour {
 
             case ("Rock", "Metal"):
                 // Left Pickaxe hit ROCK, right hit METAL
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, rockHitSound, metalParticles, metalHitSound, false);
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, rockHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
                 break;
 
             case ("Rock", "Rock"):
@@ -391,27 +396,37 @@ public class PlayerMovement : MonoBehaviour {
 
             case ("Metal", "Ice"):
                 // Left Pickaxe hit METAL, right hit ICE
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, iceParticles, iceHitSound);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, iceParticles, iceHitSound, false);
                 break;
 
             case ("Metal", "Snow"):
                 // Left Pickaxe hit METAL, right hit SNOW
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, snowParticles, snowHitSound);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, snowParticles, snowHitSound, false);
                 break;
 
             case ("Metal", "Rock"):
                 // Left Pickaxe hit METAL, right hit ROCK
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, rockParticles, rockHitSound, true);
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, rockHitSound);
                 break;
 
             case ("Metal", "Metal"):
                 // Both Pickaxes hit METAL
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, metalParticles, metalHitSound);
+                leftHitPoint = leftPickaxeHitPoint.point;
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Handle particles and sound for both pickaxes
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
                 break;
 
             case ("Metal", "Wood"):
                 // Left Pickaxe hit METAL, right hit WOOD
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, woodParticles, woodHitSound);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, woodParticles, woodHitSound, false);
                 break;
 
             case ("Wood", "Metal"):
@@ -460,7 +475,10 @@ public class PlayerMovement : MonoBehaviour {
 
             case ("Metal", null):
                 // Left Pickaxe hit METAL
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, metalHitSound, null, null, true);
+                leftHitPoint = leftPickaxeHitPoint.point;
+
+                // Handle particles and sound for left pickaxe
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, metalHitSound);
                 break;
 
             case ("Wood", null):
@@ -489,7 +507,10 @@ public class PlayerMovement : MonoBehaviour {
 
             case (null, "Metal"):
                 // Right Pickaxe hit METAL
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, null, metalParticles, metalHitSound, false);
+                rightHitPoint = rightPickaxeHitPoint.point;
+
+                // Handle particles and sound for right pickaxe
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, metalHitSound);
                 break;
 
             case (null, "Wood"):
