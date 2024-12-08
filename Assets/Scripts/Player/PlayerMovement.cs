@@ -50,6 +50,8 @@ public class PlayerMovement : MonoBehaviour {
     public Transform leftPick;             // Hit point on the tip of the pickaxe
     public Transform rightPick;            // Hit point on the tip of the pickaxe
 
+    private bool debugMode = false;
+
 
     private void Awake() {
         inputHandler = GetComponent<InputHandler>();
@@ -71,6 +73,35 @@ public class PlayerMovement : MonoBehaviour {
     private void Update() {
         HandleSlidingTime();
         HandleSlidingAnchorPosition();
+        HandleDebugMode();
+    }
+
+    private void HandleDebugMode() {
+        // Toggle debug mode when Right Shift is pressed
+        if (Input.GetKeyDown(KeyCode.RightShift)) {
+            debugMode = !debugMode;
+            playerRigidbody.isKinematic = debugMode;
+            playerRigidbody.useGravity = !debugMode;
+        }
+
+        if (debugMode) {
+            Vector3 debugMovement = Vector3.zero;
+
+            if (Input.GetKey(KeyCode.UpArrow)) {
+                debugMovement += Vector3.up;
+            }
+            if (Input.GetKey(KeyCode.DownArrow)) {
+                debugMovement += Vector3.down;
+            }
+            if (Input.GetKey(KeyCode.LeftArrow)) {
+                debugMovement += Vector3.left;
+            }
+            if (Input.GetKey(KeyCode.RightArrow)) {
+                debugMovement += Vector3.right;
+            }
+
+            transform.position += debugMovement * 10f * Time.deltaTime;
+        }
     }
 
     public void HandleAllMovement() {
@@ -103,18 +134,19 @@ public class PlayerMovement : MonoBehaviour {
 
     private void ApplyPhysics() {
         Vector3 customGravity = new Vector3(0, -10.81f, 0); // Gravity
-
-        if (isSwinging) {
-            // Apply gravity
-            playerRigidbody.isKinematic = false;
-            playerRigidbody.AddForce(customGravity, ForceMode.Acceleration);
-        } else if (leftPickHit && rightPickHit) {
-            // Completely stop the player from sliding
-            playerRigidbody.isKinematic = true; // Temporarily disable physics motion
-        } else {
-            // Apply gravity
-            playerRigidbody.isKinematic = false;
-            playerRigidbody.AddForce(customGravity, ForceMode.Acceleration);
+        if (debugMode == false) {
+            if (isSwinging) {
+                // Apply gravity
+                playerRigidbody.isKinematic = false;
+                playerRigidbody.AddForce(customGravity, ForceMode.Acceleration);
+            } else if (leftPickHit && rightPickHit) {
+                // Completely stop the player from sliding
+                playerRigidbody.isKinematic = true; // Temporarily disable physics motion
+            } else {
+                // Apply gravity
+                playerRigidbody.isKinematic = false;
+                playerRigidbody.AddForce(customGravity, ForceMode.Acceleration);
+            }
         }
     }
 
