@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticleManager : MonoBehaviour {
+    public static ParticleManager Instance { get; private set; }
 
     [Header("Particle Effects")]
-    [SerializeField] private ParticleSystem iceParticles;
-    [SerializeField] private ParticleSystem snowParticles;
-    [SerializeField] private ParticleSystem metalParticles;
-    [SerializeField] private ParticleSystem rockParticles;
-    [SerializeField] private ParticleSystem woodParticles;
+    [SerializeField] private ParticleSystem iceParticles;    // Particle effect for Ice
+    [SerializeField] private ParticleSystem snowParticles;   // Particle effect for Snow
+    [SerializeField] private ParticleSystem metalParticles;  // Particle effect for Metal
+    [SerializeField] private ParticleSystem rockParticles;   // Particle effect for Rock
+    [SerializeField] private ParticleSystem woodParticles;   // Particle effect for Wood
 
     public enum ParticleType {
         Ice,
@@ -22,8 +23,6 @@ public class ParticleManager : MonoBehaviour {
 
     private Dictionary<ParticleType, ParticleSystem> particleDictionary;
 
-
-    public static ParticleManager Instance { get; private set; }
     private void Awake() {
         if (Instance != null && Instance != this) {
             DestroyImmediate(gameObject);
@@ -32,7 +31,6 @@ public class ParticleManager : MonoBehaviour {
             DontDestroyOnLoad(gameObject);
         }
     }
-
 
     private void Start() {
         // Initialize the dictionary to map particle types to particle systems
