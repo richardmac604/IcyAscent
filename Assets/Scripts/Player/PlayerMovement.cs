@@ -17,14 +17,6 @@ public class PlayerMovement : MonoBehaviour {
     private const float swaySpeed = 3f;     // How much the player sways by larger value faster
     private const float maxMomentum = 3f;   // Maximum swinging momentum
 
-    // Serialized Fields (Particles)
-    [Header("Particles")]
-    [SerializeField] private ParticleSystem iceParticles;
-    [SerializeField] private ParticleSystem snowParticles;
-    [SerializeField] private ParticleSystem metalParticles;
-    [SerializeField] private ParticleSystem rockParticles;
-    [SerializeField] private ParticleSystem woodParticles;
-
     // Private Fields
     InputHandler inputHandler;
     Rigidbody playerRigidbody;
@@ -303,62 +295,62 @@ public class PlayerMovement : MonoBehaviour {
         switch (hitCombination) {
             case ("Ice", "Ice"):
                 // Both Pickaxes hit ICE surface
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, iceParticles, SoundManager.Sound.IceHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit);
                 break;
 
             case ("Ice", "Snow"):
                 // Left Pickaxe hit ICE, right hit SNOW
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, snowParticles, SoundManager.Sound.SnowHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit);
                 break;
 
             case ("Ice", "Rock"):
                 // Left Pickaxe hit ICE, right hit ROCK
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, rockParticles, SoundManager.Sound.RockHit, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, true);
                 break;
 
             case ("Ice", "Metal"):
                 // Left Pickaxe hit ICE, right hit METAL
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, metalParticles, SoundManager.Sound.MetalHit, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit, true);
                 break;
 
             case ("Ice", "Wood"):
                 // Left Pickaxe hit ICE, right hit WOOD
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, woodParticles, SoundManager.Sound.WoodHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit);
                 break;
 
             case ("Snow", "Ice"):
                 // Left Pickaxe hit SNOW, right hit ICE
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, iceParticles, SoundManager.Sound.IceHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit);
                 break;
 
             case ("Snow", "Snow"):
                 // Both Pickaxes hit SNOW surface
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, snowParticles, SoundManager.Sound.SnowHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit);
                 break;
 
             case ("Snow", "Rock"):
                 // Left Pickaxe hit SNOW, right hit ROCK
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, rockParticles, SoundManager.Sound.RockHit, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, true);
                 break;
 
             case ("Snow", "Metal"):
                 // Left Pickaxe hit SNOW, right hit METAL
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, metalParticles, SoundManager.Sound.MetalHit, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit, true);
                 break;
 
             case ("Snow", "Wood"):
                 // Left Pickaxe hit SNOW, right hit WOOD
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, woodParticles, SoundManager.Sound.WoodHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit);
                 break;
 
             case ("Rock", "Ice"):
                 // Left Pickaxe hit ROCK, right hit ICE
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, SoundManager.Sound.RockHit, iceParticles, SoundManager.Sound.IceHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, false);
                 break;
 
             case ("Rock", "Snow"):
                 // Left Pickaxe hit ROCK, right hit SNOW
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, SoundManager.Sound.RockHit, snowParticles, SoundManager.Sound.SnowHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, false);
                 break;
 
             case ("Rock", "Metal"):
@@ -367,8 +359,8 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
                 break;
 
             case ("Rock", "Rock"):
@@ -377,23 +369,23 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
                 break;
 
             case ("Rock", "Wood"):
                 // Left Pickaxe hit ROCK, right hit WOOD
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, rockParticles, SoundManager.Sound.RockHit, woodParticles, SoundManager.Sound.WoodHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, false);
                 break;
 
             case ("Metal", "Ice"):
                 // Left Pickaxe hit METAL, right hit ICE
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, SoundManager.Sound.MetalHit, iceParticles, SoundManager.Sound.IceHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, false);
                 break;
 
             case ("Metal", "Snow"):
                 // Left Pickaxe hit METAL, right hit SNOW
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, SoundManager.Sound.MetalHit, snowParticles, SoundManager.Sound.SnowHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, false);
                 break;
 
             case ("Metal", "Rock"):
@@ -402,8 +394,8 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
                 break;
 
             case ("Metal", "Metal"):
@@ -412,49 +404,49 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for both pickaxes
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
                 break;
 
             case ("Metal", "Wood"):
                 // Left Pickaxe hit METAL, right hit WOOD
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, metalParticles, SoundManager.Sound.MetalHit, woodParticles, SoundManager.Sound.WoodHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, false);
                 break;
 
             case ("Wood", "Metal"):
                 // Left Pickaxe hit WOOD, right hit METAL
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, metalParticles, SoundManager.Sound.MetalHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
                 break;
 
             case ("Wood", "Ice"):
                 // Left Pickaxe hit WOOD, right hit ICE
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, iceParticles, SoundManager.Sound.IceHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit);
                 break;
 
             case ("Wood", "Snow"):
                 // Left Pickaxe hit WOOD, right hit SNOW
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, snowParticles, SoundManager.Sound.SnowHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit);
                 break;
 
             case ("Wood", "Rock"):
                 // Left Pickaxe hit WOOD, right hit ROCK
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, rockParticles, SoundManager.Sound.RockHit, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit, true);
                 break;
 
             case ("Wood", "Wood"):
                 // Both Pickaxes hit WOOD
-                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, woodParticles, SoundManager.Sound.WoodHit);
+                HandleBothPickaxesHitSameSurface(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit);
                 break;
 
             // LEFT pickaxe hit cases
             case ("Ice", null):
                 // Left Pickaxe hit ICE
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, iceParticles, SoundManager.Sound.IceHit, null, SoundManager.Sound.None, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, ParticleManager.ParticleType.None, SoundManager.Sound.None, true);
                 break;
 
             case ("Snow", null):
                 // Left Pickaxe hit SNOW
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, snowParticles, SoundManager.Sound.SnowHit, null, SoundManager.Sound.None, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, ParticleManager.ParticleType.None, SoundManager.Sound.None, true);
                 break;
 
             case ("Rock", null):
@@ -462,7 +454,7 @@ public class PlayerMovement : MonoBehaviour {
                 leftHitPoint = leftPickaxeHitPoint.point;
 
                 // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
                 break;
 
             case ("Metal", null):
@@ -470,23 +462,23 @@ public class PlayerMovement : MonoBehaviour {
                 leftHitPoint = leftPickaxeHitPoint.point;
 
                 // Handle particles and sound for left pickaxe
-                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
                 break;
 
             case ("Wood", null):
                 // Left Pickaxe hit WOOD
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, woodParticles, SoundManager.Sound.WoodHit, null, SoundManager.Sound.None, true);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, ParticleManager.ParticleType.None, SoundManager.Sound.None, true);
                 break;
 
             // RIGHT pickaxe hit cases
             case (null, "Ice"):
                 // Right Pickaxe hit ICE
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, SoundManager.Sound.None, iceParticles, SoundManager.Sound.IceHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.None, SoundManager.Sound.None, ParticleManager.ParticleType.Ice, SoundManager.Sound.IceHit, false);
                 break;
 
             case (null, "Snow"):
                 // Right Pickaxe hit SNOW
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, SoundManager.Sound.None, snowParticles, SoundManager.Sound.SnowHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.None, SoundManager.Sound.None, ParticleManager.ParticleType.Snow, SoundManager.Sound.SnowHit, false);
                 break;
 
             case (null, "Rock"):
@@ -494,7 +486,7 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rockParticles, SoundManager.Sound.RockHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Rock, SoundManager.Sound.RockHit);
                 break;
 
             case (null, "Metal"):
@@ -502,12 +494,12 @@ public class PlayerMovement : MonoBehaviour {
                 rightHitPoint = rightPickaxeHitPoint.point;
 
                 // Handle particles and sound for right pickaxe
-                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, metalParticles, SoundManager.Sound.MetalHit);
+                HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, ParticleManager.ParticleType.Metal, SoundManager.Sound.MetalHit);
                 break;
 
             case (null, "Wood"):
                 // Right Pickaxe hit WOOD
-                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, null, SoundManager.Sound.None, woodParticles, SoundManager.Sound.WoodHit, false);
+                HandleMixedPickaxesHits(leftPickaxeHitPoint, rightPickaxeHitPoint, ParticleManager.ParticleType.None, SoundManager.Sound.None, ParticleManager.ParticleType.Wood, SoundManager.Sound.WoodHit, false);
                 break;
 
             case (null, null):
@@ -522,7 +514,7 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
-    private void HandleBothPickaxesHitSameSurface(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleSystem leftParticles, SoundManager.Sound leftSound, ParticleSystem rightParticles, SoundManager.Sound rightSound) {
+    private void HandleBothPickaxesHitSameSurface(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleManager.ParticleType leftParticles, SoundManager.Sound leftSound, ParticleManager.ParticleType rightParticles, SoundManager.Sound rightSound) {
         // Get hit points
         Vector3 leftHitPoint = leftPickaxeHitPoint.point;
         Vector3 rightHitPoint = rightPickaxeHitPoint.point;
@@ -540,18 +532,18 @@ public class PlayerMovement : MonoBehaviour {
 
     }
 
-    private void HandleMixedPickaxesHits(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleSystem leftParticles, SoundManager.Sound leftSound, ParticleSystem rightParticles, SoundManager.Sound rightSound, bool isLeft) {
+    private void HandleMixedPickaxesHits(RaycastHit leftPickaxeHitPoint, RaycastHit rightPickaxeHitPoint, ParticleManager.ParticleType leftParticles, SoundManager.Sound leftSound, ParticleManager.ParticleType rightParticles, SoundManager.Sound rightSound, bool isLeft) {
         // Get hit points
         Vector3 leftHitPoint = leftPickaxeHitPoint.point;
         Vector3 rightHitPoint = rightPickaxeHitPoint.point;
 
         // Handle particles and sound
-        if (leftParticles != null) {
+        if (leftParticles != ParticleManager.ParticleType.None) {
             HandleParticlesAndSound(leftHitPoint, ref leftParticleSpawned, leftParticles, leftSound);
         } else {
             leftParticleSpawned = false;
         }
-        if (rightParticles != null) {
+        if (rightParticles != ParticleManager.ParticleType.None) {
             HandleParticlesAndSound(rightHitPoint, ref rightParticleSpawned, rightParticles, rightSound);
         } else {
             rightParticleSpawned = false;
@@ -584,22 +576,10 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
 
-    private void spawnParticles(Vector3 leftPosition, Vector3 rightPosition, ParticleSystem particleType) {
-        // Check and spawn particles at the left position if it's valid
-        if (leftPosition != Vector3.zero) {
-            Instantiate(particleType, leftPosition, Quaternion.identity);
-        }
-
-        // Check and spawn particles at the right position if it's valid
-        if (rightPosition != Vector3.zero) {
-            Instantiate(particleType, rightPosition, Quaternion.identity);
-        }
-    }
-
-    private void HandleParticlesAndSound(Vector3 hitPoint, ref bool particleSpawnedFlag, ParticleSystem particles, SoundManager.Sound sound) {
+    private void HandleParticlesAndSound(Vector3 hitPoint, ref bool particleSpawnedFlag, ParticleManager.ParticleType particle, SoundManager.Sound sound) {
         if (!particleSpawnedFlag) {
             SoundManager.PlaySound(sound);
-            spawnParticles(hitPoint, Vector3.zero, particles);
+            ParticleManager.Instance.PlayParticle(particle, hitPoint);
             particleSpawnedFlag = true;
         }
     }

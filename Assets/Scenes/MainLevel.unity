@@ -6891,6 +6891,55 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &244210026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 244210028}
+  - component: {fileID: 244210027}
+  m_Layer: 0
+  m_Name: ParticleManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &244210027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244210026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c1251c9cb9110d4495c332ea254b3ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  iceParticles: {fileID: 8183778054674446023, guid: b09cd523b7d9c6542b51419b0fa0a3d3, type: 3}
+  snowParticles: {fileID: 4124925414413172919, guid: e7d0735d141451d45a8cce5230820c19, type: 3}
+  metalParticles: {fileID: 8183778054674446023, guid: dff21ebea6048e143b9e11acd6c273c5, type: 3}
+  rockParticles: {fileID: 8183778054674446023, guid: dff21ebea6048e143b9e11acd6c273c5, type: 3}
+  woodParticles: {fileID: 8183778054674446023, guid: 89b9e2520c3f99243b67544cea6bd64c, type: 3}
+--- !u!4 &244210028
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244210026}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &252449753
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32684,3 +32733,4 @@ SceneRoots:
   - {fileID: 70233337}
   - {fileID: 813877216}
   - {fileID: 202559207}
+  - {fileID: 244210028}
