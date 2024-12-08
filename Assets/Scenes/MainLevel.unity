@@ -1639,6 +1639,61 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8a81d5f8c1e69684ab13823f2d9f1c11, type: 3}
+--- !u!1 &202559205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 202559207}
+  - component: {fileID: 202559206}
+  m_Layer: 0
+  m_Name: SoundAssets
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &202559206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202559205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d20b391355491a498f680e508fbde56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundAudioClipArray:
+  - sound: 0
+    audioClip: {fileID: 8300000, guid: 80bdbe41e8f0ed14dadb7509bc249492, type: 3}
+  - sound: 1
+    audioClip: {fileID: 8300000, guid: 6b16d41317ffb7f4f963895af69513d8, type: 3}
+  - sound: 2
+    audioClip: {fileID: 8300000, guid: 6b16d41317ffb7f4f963895af69513d8, type: 3}
+  - sound: 3
+    audioClip: {fileID: 8300000, guid: a1c0c64bdf64f99419ba7c5329c1a63a, type: 3}
+  - sound: 4
+    audioClip: {fileID: 8300000, guid: 7aad5bdc63c899546a1956442377a365, type: 3}
+--- !u!4 &202559207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202559205}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &204650247
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33303,3 +33358,4 @@ SceneRoots:
   - {fileID: 70233337}
   - {fileID: 959665144}
   - {fileID: 813877216}
+  - {fileID: 202559207}
