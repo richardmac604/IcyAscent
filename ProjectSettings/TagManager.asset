@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Climbable
+  - FallingObject
   layers:
   - Default
   - TransparentFX
@@ -11,14 +13,14 @@ TagManager:
   - 
   - Water
   - UI
+  - Ice
+  - FloorLayer
+  - Rock
+  - Snow
+  - IgnoreCollisionOnSelf
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Metal
+  - Wood
   - 
   - 
   - 
