@@ -139,7 +139,9 @@ public class PlayerMovement : MonoBehaviour {
                 // Apply gravity
                 playerRigidbody.isKinematic = false;
                 playerRigidbody.AddForce(customGravity, ForceMode.Acceleration);
-            } else if (leftPickHit && rightPickHit) {
+            } else if (leftPickHit && rightPickHit &&
+                   leftHitLayerName != "Rock" && leftHitLayerName != "Metal" &&
+                   rightHitLayerName != "Rock" && rightHitLayerName != "Metal") {
                 // Completely stop the player from sliding
                 playerRigidbody.isKinematic = true; // Temporarily disable physics motion
             } else {
