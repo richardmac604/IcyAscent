@@ -1,35 +1,60 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class FinishScript : MonoBehaviour {
+public class FinishScript : MonoBehaviour
+{
     private TimerManager timerManager;
+    private bool playerWon = false;
 
-    private void Start() {
+    public GameObject winMessageUI;
+
+    private void Start()
+    {
         timerManager = FindObjectOfType<TimerManager>();
+        if (winMessageUI != null)
+        {
+            winMessageUI.SetActive(false);
+        }
     }
 
-    private void OnTriggerEnter(Collider other) {
-        // Check if the player hit the flag pole
-        if (other.CompareTag("Player")) {
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") && !playerWon)
+        {
+            playerWon = true;
+
             float finishTime = timerManager.elapsedTime;
 
-            // Check if there's an existing fastest time
-            if (PlayerPrefs.HasKey("FinishTime")) {
+            if (PlayerPrefs.HasKey("FinishTime"))
+            {
                 float fastestTime = PlayerPrefs.GetFloat("FinishTime");
 
-                // Update the fastest time if the current finish time is better
-                if (finishTime < fastestTime) {
+                if (finishTime < fastestTime)
+                {
                     PlayerPrefs.SetFloat("FinishTime", finishTime);
                 }
-            } else {
-                // If no fastest time is stored, save the current finish time as the fastest
+            }
+            else
+            {
                 PlayerPrefs.SetFloat("FinishTime", finishTime);
             }
 
-            // Load the menu scene
-            SceneManager.LoadScene("MainMenu");
+            // Show "You Win!" message
+            if (winMessageUI != null)
+            {
+                winMessageUI.SetActive(true);
+            }
+
+            StartCoroutine(ShowWinMessageAndGoToMainMenu());
         }
+    }
+
+    private IEnumerator ShowWinMessageAndGoToMainMenu()
+    {
+        yield return new WaitForSeconds(5f);
+
+        winMessageUI.SetActive(false);
+        SceneManager.LoadScene("MainMenu");
     }
 }
