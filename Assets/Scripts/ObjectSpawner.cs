@@ -73,7 +73,7 @@ public class ObjectSpawner : MonoBehaviour
 
     private IEnumerator UpdateIndicator(RectTransform indicator, Vector3 targetPosition)
     {
-        while (true)
+        while (indicator != null) // Check if the indicator still exists
         {
             // Convert world position to screen position
             Vector3 screenPosition = mainCamera.WorldToScreenPoint(targetPosition);

@@ -100,7 +100,7 @@ public class PlayerMovement : MonoBehaviour {
                 debugMovement += Vector3.right;
             }
 
-            transform.position += debugMovement * 10f * Time.deltaTime;
+            transform.position += debugMovement * 20f * Time.deltaTime;
         }
     }
 
