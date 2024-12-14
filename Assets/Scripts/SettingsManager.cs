@@ -68,7 +68,7 @@ public class SettingsManager : MonoBehaviour
             );
 
             volume = GUI.Slider(new Rect(Screen.width / 2 + 7,
-                Screen.height / 2 + 25, 60, 25), volume, 0, 0, 1,
+                Screen.height / 2 + 50, 60, 25), volume, 0, 0, 1,
                 GUI.skin.horizontalSlider, GUI.skin.horizontalSliderThumb,
                 true, 0, GUI.skin.horizontalSlider
                 );
